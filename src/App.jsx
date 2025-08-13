@@ -13,6 +13,7 @@ const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
 
 import main_logo from "./assets/mainLogo.png"
+import { GiTeacher } from 'react-icons/gi';
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -39,6 +40,7 @@ const App = () => {
   const menuItems = [
     { key: '/', icon: <MdGroups3 size={24} />, link: "/", title:"Guruhlar" },
     { key: '/payment', icon: <MdPayment size={24} />, link: "/payment" , title:"To'lovlar" },
+    { key: '/teachers', icon: <GiTeacher size={24} />, link: "/teachers", title: "Ustozlar" },
     { key: '/students', icon: <PiStudentFill size={24} />, link: "/students", title:"O'quvchilar" },
     { key: '/settings', icon: <AiFillSetting size={24} />, link: "/settings", title: "Sozlamalar" },
   ];
