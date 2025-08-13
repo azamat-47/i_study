@@ -23,7 +23,7 @@ const App = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  console.log(colorBgContainer);
+  
   
 
   const location = useLocation();
@@ -49,7 +49,7 @@ const App = () => {
     <Layout className='min-h-[100vh]'>
       {/* Desktop Sider */}
       {!isMobile && (
-        <Sider trigger={null} collapsible collapsed={collapsed} className='min-h-[100vh] bg-[#141414]!'>
+        <Sider trigger={null} collapsible collapsed={collapsed} className='min-h-[64px] bg-[#141414]!'>
           <div className="flex items-center justify-center h-16">
             <img src={main_logo} alt="Logo" className="h-10 w-10" />
             {!collapsed && <span className="ml-2 text-lg font-black ">I_Study</span>}
@@ -127,7 +127,7 @@ const App = () => {
               <Link
                 key={item.key}
                 to={item.link}
-                className={`p-2 ${location.pathname === item.key ? "text-blue-500" : "text-gray-500"}`}
+                className={`p-2 ${location.pathname === item.key ? "text-blue-500!" : "text-gray-500!"}`}
               >
                 {item.icon}
               </Link>
