@@ -34,6 +34,7 @@ const Modal2Teachers = ({ isOpen, onClose, onSuccess }) => {
   const TEACHERS_URL = `${API_BASE_URL}/teachers`;
   const GROUPS_URL = `${API_BASE_URL}/courses`;
 
+
   useEffect(() => {
     if (isOpen) {
       fetchData();
@@ -110,137 +111,139 @@ const Modal2Teachers = ({ isOpen, onClose, onSuccess }) => {
         styles: modalStyles,
       }}
     >
-      <Modal
-        title="O'qituvchilar va guruhlarni biriktirish"
-        open={isOpen}
-        onOk={handleClose}
-        onCancel={handleClose}
-        width={1000}
-        footer={[
-          <Button key="close" onClick={handleClose}>
-            Yopish
-          </Button>
-        ]}
-      >
-        {loading ? (
-          <div className="flex justify-center items-center h-32">
-            <div className="text-lg">Yuklanmoqda...</div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Teachers Section */}
-            <div className="bg-gray-700 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-4 border-b border-gray-600 pb-2">
-                O'qituvchilar
-              </h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {teachers.length > 0 ? (
-                  teachers.map((teacher) => (
-                    <div key={teacher.id} className="bg-gray-600 rounded-md p-3 hover:bg-gray-650 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="text-white font-medium text-sm">
-                            {formatValue(teacher.name)}
-                          </h4>
-                          <p className="text-gray-300 text-xs mt-1">
-                            {formatRole(teacher.userRole)}
-                          </p>
-                          {teacher.email && (
-                            <p className="text-gray-400 text-xs mt-1">
-                              {teacher.email}
-                            </p>
-                          )}
-                        </div>
-                        <Button 
-                          type="link" 
-                          size="small"
-                          className="text-blue-400 hover:text-blue-300"
-                        >
-                          Tanlash
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-gray-400 text-sm py-8">
-                    Hali o'qituvchi qo'shilmagan
+    <Modal
+  title="O'qituvchilar va guruhlarni biriktirish"
+  open={isOpen}
+  onOk={handleClose}
+  onCancel={handleClose}
+  width={1000}
+  footer={[
+    <Button key="close" onClick={handleClose}>
+      Yopish
+    </Button>
+  ]}
+  className="p-4" // Modal ichida umumiy padding
+>
+  {loading ? (
+    <div className="flex justify-center items-center h-32">
+      <div className="text-lg">Yuklanmoqda...</div>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2">
+      {/* Teachers Section */}
+      <div className="bg-gray-700 rounded-lg p-5">
+        <h3 className="text-lg font-semibold text-white mb-4 border-b border-gray-600 pb-2">
+          O'qituvchilar
+        </h3>
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+          {teachers.length > 0 ? (
+            teachers.map((teacher) => (
+              <div key={teacher.id} className="bg-gray-600 rounded-md p-4 hover:bg-gray-650 transition-colors">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1">
+                    <h4 className="text-white font-medium text-sm">
+                      {formatValue(teacher.name)}
+                    </h4>
+                    <p className="text-gray-300 text-xs mt-1">
+                      {formatRole(teacher.userRole)}
+                    </p>
+                    {teacher.email && (
+                      <p className="text-gray-400 text-xs mt-1">
+                        {teacher.email}
+                      </p>
+                    )}
                   </div>
-                )}
+                  <Button 
+                    type="link" 
+                    size="small"
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    Tanlash
+                  </Button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-400 text-sm py-8">
+              Hali o'qituvchi qo'shilmagan
             </div>
-
-            {/* Groups Section */}
-            <div className="bg-gray-700 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-4 border-b border-gray-600 pb-2">
-                Guruhlar
-              </h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {groups.length > 0 ? (
-                  groups.map((group) => (
-                    <div key={group.id} className="bg-gray-600 rounded-md p-3 hover:bg-gray-650 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="text-white font-medium text-sm">
-                            {formatValue(group.name)}
-                          </h4>
-                          {group.description && (
-                            <p className="text-gray-300 text-xs mt-1">
-                              {group.description}
-                            </p>
-                          )}
-                          {group.fee && (
-                            <p className="text-green-400 text-xs mt-1">
-                              {group.fee} so'm
-                            </p>
-                          )}
-                        </div>
-                        <Button 
-                          type="link" 
-                          size="small"
-                          className="text-green-400 hover:text-green-300"
-                        >
-                          Tanlash
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center text-gray-400 text-sm py-8">
-                    Hali guruh qo'shilmagan
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Linking Section */}
-        <div className="mt-6 bg-gray-700 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-white mb-4 border-b border-gray-600 pb-2">
-            Biriktirish
-          </h3>
-          <div className="bg-gray-600 rounded-md p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-gray-300 text-sm">
-                  <span className="text-blue-400">O'qituvchi:</span> 
-                  <span className="ml-2 text-white">Tanlanmagan</span>
-                </p>
-                <p className="text-gray-300 text-sm mt-1">
-                  <span className="text-green-400">Guruh:</span> 
-                  <span className="ml-2 text-white">Tanlanmagan</span>
-                </p>
-              </div>
-              <Button 
-                type="primary"
-                disabled={true}
-              >
-                Biriktirish
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
-      </Modal>
+      </div>
+
+      {/* Groups Section */}
+      <div className="bg-gray-700 rounded-lg p-5">
+        <h3 className="text-lg font-semibold text-white mb-4 border-b border-gray-600 pb-2">
+          Guruhlar
+        </h3>
+        <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+          {groups.length > 0 ? (
+            groups.map((group) => (
+              <div key={group.id} className="bg-gray-600 rounded-md p-4 hover:bg-gray-650 transition-colors">
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1">
+                    <h4 className="text-white font-medium text-sm">
+                      {formatValue(group.name)}
+                    </h4>
+                    {group.description && (
+                      <p className="text-gray-300 text-xs mt-1">
+                        {group.description}
+                      </p>
+                    )}
+                    {group.fee && (
+                      <p className="text-green-400 text-xs mt-1">
+                        {group.fee} so'm
+                      </p>
+                    )}
+                  </div>
+                  <Button 
+                    type="link" 
+                    size="small"
+                    className="text-green-400 hover:text-green-300"
+                  >
+                    Tanlash
+                  </Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center text-gray-400 text-sm py-8">
+              Hali guruh qo'shilmagan
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* Linking Section */}
+  <div className="mt-6 bg-gray-700 rounded-lg p-5">
+    <h3 className="text-lg font-semibold text-white mb-4 border-b border-gray-600 pb-2">
+      Biriktirish
+    </h3>
+    <div className="bg-gray-600 rounded-md p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <p className="text-gray-300 text-sm">
+            <span className="text-blue-400">O'qituvchi:</span> 
+            <span className="ml-2 text-white">Tanlanmagan</span>
+          </p>
+          <p className="text-gray-300 text-sm mt-1">
+            <span className="text-green-400">Guruh:</span> 
+            <span className="ml-2 text-white">Tanlanmagan</span>
+          </p>
+        </div>
+        <Button 
+          type="primary"
+          disabled={true}
+        >
+          Biriktirish
+        </Button>
+      </div>
+    </div>
+  </div>
+</Modal>
+
     </ConfigProvider>
   );
 };

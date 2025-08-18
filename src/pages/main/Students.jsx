@@ -162,181 +162,149 @@ const Students = () => {
       </div>
 
       {/* Teachers Section */}
-      <div className="max-w-6xl mx-auto bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-700">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg sm:text-xl font-semibold text-white">
-            O'qituvchilar
-          </h2>
-          <button
-            onClick={assignTeacher} // <-- O'ZGARTIRILDI
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-          >
-            O'qituvchi qo'shish
-          </button>
-        </div>
+ {/* Teachers Section */}
+<div className="max-w-6xl mx-auto bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-700 flex flex-col h-[400px]">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-lg sm:text-xl font-semibold text-white">
+      O'qituvchilar
+    </h2>
+    <button
+      onClick={assignTeacher}
+      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+    >
+      O'qituvchi qo'shish
+    </button>
+  </div>
 
-        <div className="overflow-x-auto">
-          {/* O'qituvchilar jadvali (o'zgarishsiz qoldi) */}
-          <table className="w-full min-w-full">
-            <thead>
-              <tr className="border-b border-gray-600">
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  To'liq ism
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Email
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Telefon
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base hidden sm:table-cell">
-                  Lavozim
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Amallar
-                </th>
-              </tr>
-            </thead>
-            <tbody >
-              {teachers.length > 0 ? (
-                teachers.map((teacher) => (
-                  <tr key={teacher.id} className="border-b border-gray-700">
-                    <td className="py-3 px-2 sm:px-4 text-white text-sm sm:text-base">
-                      {formatValue(teacher.name)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">
-                      {formatValue(teacher.email)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">
-                      {formatValue(teacher.phone)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base hidden sm:table-cell">
-                      {formatRole(teacher.userRole)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => editTeacher(teacher)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all duration-200 cursor-pointer px-3 py-2 rounded-md hover:shadow-lg hover:scale-105 active:scale-95"
-                        >
-                          <CiEdit className="inline-block mr-1" />
-                        </button>
-                        <button
-                          onClick={() => removeTeacher(teacher.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-all duration-200 cursor-pointer px-3 py-2 rounded-md hover:shadow-lg hover:scale-105 active:scale-95"
-                        >
-                          <MdOutlineDelete className="inline-block mr-1" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="5"
-                    className="py-4 px-2 sm:px-4 text-center text-gray-400 text-sm sm:text-base"
+  {/* Jadval header */}
+  <div className="overflow-x-auto">
+    <table className="w-full min-w-full">
+      <thead className="bg-gray-800 sticky top-0 z-10">
+        <tr className="border-b border-gray-600">
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">To'liq ism</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">Email</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">Telefon</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base hidden sm:table-cell">Lavozim</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">Amallar</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  {/* Scroll bo'ladigan body */}
+  <div className="overflow-y-auto flex-1">
+    <table className="w-full min-w-full">
+      <tbody>
+        {teachers.length > 0 ? (
+          teachers.map((teacher) => (
+            <tr key={teacher.id} className="border-b border-gray-700">
+              <td className="py-3 px-2 sm:px-4 text-white text-sm sm:text-base">{formatValue(teacher.name)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">{formatValue(teacher.email)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">{formatValue(teacher.phone)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base hidden sm:table-cell">{formatRole(teacher.userRole)}</td>
+              <td className="py-3 px-2 sm:px-4">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => editTeacher(teacher)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md"
                   >
-                    Hali o'qituvchi qo'shilmagan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    <CiEdit className="inline-block mr-1" />
+                  </button>
+                  <button
+                    onClick={() => removeTeacher(teacher.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md"
+                  >
+                    <MdOutlineDelete className="inline-block mr-1" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="5" className="py-4 px-2 sm:px-4 text-center text-gray-400">
+              Hali o'qituvchi qo'shilmagan
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
       {/* Students Section (o'zgarishsiz qoldi) */}
-      <div className="max-w-6xl mx-auto bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-700">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg sm:text-xl font-semibold text-white">
-            O'quvchilar
-          </h2>
-          <button
-            onClick={addStudent}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-          >
-            O'quvchi qo'shish
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          {/* O'quvchilar jadvali (o'zgarishsiz qoldi) */}
-          <table className="w-full min-w-full">
-            <thead>
-              <tr className="border-b border-gray-600">
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  To'liq ism
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Email
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Telefon
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base hidden sm:table-cell">
-                  Ro'yxatdan o'tgan sana
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base hidden lg:table-cell">
-                  Kurslar
-                </th>
-                <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Amallar
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.length > 0 ? (
-                students.map((student) => (
-                  <tr key={student.id} className="border-b border-gray-700">
-                    <td className="py-3 px-2 sm:px-4 text-white text-sm sm:text-base">
-                      {formatValue(student.name)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">
-                      {formatValue(student.email)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">
-                      {formatValue(student.phone)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base hidden sm:table-cell">
-                      {formatDate(student.enrollmentDate)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base hidden lg:table-cell">
-                      {formatCourses(student.courses)}
-                    </td>
-                    <td className="py-3 px-2 sm:px-4">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => editStudent(student)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all duration-200 cursor-pointer px-3 py-2 rounded-md hover:shadow-lg hover:scale-105 active:scale-95"
-                        >
-                          <CiEdit className="inline-block mr-1" />
-                       
-                        </button>
-                        <button
-                          onClick={() => removeStudent(student.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-all duration-200 cursor-pointer px-3 py-2 rounded-md hover:shadow-lg hover:scale-105 active:scale-95"
-                        >
-                          <MdOutlineDelete className="inline-block mr-1" />
-                    
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="py-4 px-2 sm:px-4 text-center text-gray-400 text-sm sm:text-base"
+      <div className="max-w-6xl mx-auto bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-700 flex flex-col h-[400px]">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-lg sm:text-xl font-semibold text-white">
+      O'quvchilar
+    </h2>
+    <button
+      onClick={addStudent}
+      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+    >
+      O'quvchi qo'shish
+    </button>
+  </div>
+
+  {/* Jadval sarlavha qismi */}
+  <div className="overflow-x-auto">
+    <table className="w-full min-w-full">
+      <thead className="bg-gray-800 sticky top-0 z-10">
+        <tr className="border-b border-gray-600">
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">To'liq ism</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">Email</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">Telefon</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base hidden sm:table-cell">Ro'yxatdan o'tgan sana</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base hidden lg:table-cell">Kurslar</th>
+          <th className="text-left py-3 px-2 sm:px-4 text-gray-300 font-medium text-sm sm:text-base">Amallar</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  {/* Scroll bo‘ladigan qismi */}
+  <div className="overflow-y-auto flex-1">
+    <table className="w-full min-w-full">
+      <tbody>
+        {students.length > 0 ? (
+          students.map((student) => (
+            <tr key={student.id} className="border-b border-gray-700">
+              <td className="py-3 px-2 sm:px-4 text-white text-sm sm:text-base">{formatValue(student.name)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">{formatValue(student.email)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base">{formatValue(student.phone)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base hidden sm:table-cell">{formatDate(student.enrollmentDate)}</td>
+              <td className="py-3 px-2 sm:px-4 text-gray-300 text-sm sm:text-base hidden lg:table-cell">{formatCourses(student.courses)}</td>
+              <td className="py-3 px-2 sm:px-4">
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => editStudent(student)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all duration-200 cursor-pointer px-3 py-2 rounded-md hover:shadow-lg hover:scale-105 active:scale-95"
                   >
-                    Hali o'quvchi qo'shilmagan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    <CiEdit className="inline-block mr-1" />
+                  </button>
+                  <button
+                    onClick={() => removeStudent(student.id)}
+                    className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-all duration-200 cursor-pointer px-3 py-2 rounded-md hover:shadow-lg hover:scale-105 active:scale-95"
+                  >
+                    <MdOutlineDelete className="inline-block mr-1" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="6" className="py-4 px-2 sm:px-4 text-center text-gray-400 text-sm sm:text-base">
+              Hali o'quvchi qo'shilmagan
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
        {/* Modals */}
        {/* O'qituvchini guruhga biriktirish uchun modal */}
