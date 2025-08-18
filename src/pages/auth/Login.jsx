@@ -1,13 +1,37 @@
 import React from "react";
 import { Form, Input, Button, Typography, message } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 
 const { Title } = Typography;
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { loginMutation } = useAuth();
+
   const onFinish = (values) => {
-    console.log("Login data:", values);
-    message.success("Login successful!");
+    loginMutation.mutate(values, {
+      onSuccess: (data) => {
+        // Agar backenddan token kelsa
+        if (data?.accessToken) {
+          try {
+            localStorage.setItem("token", JSON.stringify(data.accessToken));
+            message.success("Muvaffaqiyatli kirdingiz!");
+            navigate("/"); // Asosiy sahifaga yo'naltirish
+          } catch (err) {
+            console.error("LocalStorage error:", err);
+            message.error("LocalStorage ga yozishda xatolik yuz berdi.");
+          }
+        } else {
+          message.error("Token topilmadi!");
+        }
+      },
+      onError: (err) => {
+        console.error("Login error:", err);
+        message.error("Login muvaffaqiyatsiz bo'ldi!");
+      },
+    });
+
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -17,7 +41,7 @@ const Login = () => {
 
   return (
     <div className="flex justify-center items-center h-screen bg-black">
-      <div className=" p-8 rounded-2xl shadow-lg w-full max-w-md">
+      <div className="p-8 rounded-2xl shadow-lg w-full max-w-md bg-gray-950">
         <Title level={2} className="text-center mb-6">
           Kirish
         </Title>
@@ -34,10 +58,9 @@ const Login = () => {
             rules={[
               { required: true, message: "Username to'liq kiriting!" },
               { min: 6, message: "Username kamida 6 ta harfdan iborat bo'lishi kerak!" },
-              // { type: "email", message: "Enter a valid email!" },
             ]}
           >
-            <Input placeholder="Username'ingizni kiriting" size="large"/>
+            <Input placeholder="Username'ingizni kiriting" size="large" />
           </Form.Item>
 
           <Form.Item
@@ -46,7 +69,7 @@ const Login = () => {
             hasFeedback
             rules={[
               { required: true, message: "Iltimos parolni to'liq kiriting!" },
-              { min: 6, message: "Parol 6 ta belgidan kam bo'lmasligi kerak!" }
+              { min: 6, message: "Parol 6 ta belgidan kam bo'lmasligi kerak!" },
             ]}
           >
             <Input.Password placeholder="Parolni kiriting" size="large" />

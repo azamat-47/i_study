@@ -1,9 +1,9 @@
 // Students.jsx
 
 import React, { useState, useEffect } from "react";
-import ModalStudents from "./ModalStudents";
-import Modal2Teachers from "./Modal2Teachers";
-import ModalTeachers from "./ModalTeachers"; // <--- QO'SHILDI: Xatolikni tuzatish uchun
+import ModalStudents from "../../components/ModalStudents";
+import Modal2Teachers from "../../components/Modal2Teachers";
+import ModalTeachers from "../../components/ModalTeachers"; // <--- QO'SHILDI: Xatolikni tuzatish uchun
 import { MdOutlineDelete } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 import axios from "axios";

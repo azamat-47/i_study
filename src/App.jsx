@@ -38,11 +38,11 @@ const App = () => {
   };
 
   const menuItems = [
-    { key: '/', icon: <MdGroups3 size={24} />, link: "/", title:"Guruhlar" },
-    { key: '/payment', icon: <MdPayment size={24} />, link: "/payment" , title:"To'lovlar" },
-    { key: '/teachers', icon: <GiTeacher size={24} />, link: "/teachers", title: "Ustozlar" },
-    { key: '/students', icon: <PiStudentFill size={24} />, link: "/students", title:"O'quvchilar" },
-    { key: '/settings', icon: <AiFillSetting size={24} />, link: "/settings", title: "Sozlamalar" },
+    { key: '/', icon: <MdGroups3 size={20} />, link: "/", title:"Guruhlar" },
+    { key: '/payment', icon: <MdPayment size={20} />, link: "/payment" , title:"To'lovlar" },
+    { key: '/teachers', icon: <GiTeacher size={20} />, link: "/teachers", title: "Ustozlar" },
+    { key: '/students', icon: <PiStudentFill size={20} />, link: "/students", title:"O'quvchilar" },
+    { key: '/settings', icon: <AiFillSetting size={20} />, link: "/settings", title: "Sozlamalar" },
   ];
 
   return (
@@ -63,6 +63,7 @@ const App = () => {
               icon: item.icon,
               label: <Link to={item.link}>{item.title}</Link>
             }))}
+            
             className='h-full bg-[#141414]!'
           />
         </Sider>

@@ -2,74 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { MdOutlineDelete } from "react-icons/md";
 import { CiEdit } from "react-icons/ci";
 import axios from 'axios';
-import ModalGroups from './ModalGroups'; 
+import ModalGroups from '../../components/ModalGroups'; 
+
+const groups = []
 
 const Main = () => {
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
 
-  // API URL
-  const API_BASE_URL = 'https://lms-production-94cb.up.railway.app';
-  const GROUPS_URL = `${API_BASE_URL}/courses`;
-
-  // Guruhlarni yuklash funksiyasi
-  useEffect(() => {
-    fetchGroups();
-  }, []);
-
-  const fetchGroups = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(GROUPS_URL);
-      setGroups(response.data);
-    } catch (error) {
-      console.error('Guruhlarni yuklashda xatolik:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Modalni ochish (yangi guruh qo'shish uchun)
-  const addGroup = () => {
-    setIsEditMode(false);
-    setEditingGroup(null);
-    setIsModalOpen(true);
-  };
-
-  // Modalni ochish (guruhni tahrirlash uchun)
-  const editGroup = (group) => {
-    setIsEditMode(true);
-    setEditingGroup(group);
-    setIsModalOpen(true);
-  };
-
-  // Muvaffaqiyatli amal (qo'shish/tahrirlash) dan so'ng
-  const handleGroupSuccess = () => {
-    fetchGroups(); // Ro'yxatni yangilash
-    setIsModalOpen(false); // Modalni yopish
-    setIsEditMode(false);
-    setEditingGroup(null);
-  };
-
-  // Guruhni o'chirish
-  const removeGroup = async (groupId) => {
-    // Optimistik UI: O'chirish so'rovini yuborishdan oldin UI'dan olib tashlash
-    const originalGroups = [...groups];
-    setGroups(groups.filter(group => group.id !== groupId));
-
-    try {
-      await axios.delete(`${GROUPS_URL}/${groupId}`);
-    } catch (error) {
-      console.error('Guruhni o\'chirishda xatolik:', error);
-      // Xatolik bo'lsa, asl holatga qaytarish
-      setGroups(originalGroups);
-      // Foydalanuvchiga xatolik haqida xabar berish mumkin
-    }
-  };
-
+  const [openModal, setOpenModal] = useState(false)
+ 
+  function addGroup() {
+    setOpenModal(true)
+  }
+  
   // Qiymatni formatlash
   const formatValue = (value) =>
     value && String(value).trim().length > 0 ? value : '-';
@@ -80,14 +24,7 @@ const Main = () => {
     return `${fee.toLocaleString('uz-UZ')} so'm`;
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64 bg-gray-900">
-        <div className="text-lg text-white">Yuklanmoqda...</div>
-      </div>
-    );
-  }
-
+  
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 bg-gray-900 min-h-screen">
       {/* Sahifa sarlavhasi */}
@@ -183,11 +120,11 @@ const Main = () => {
 
       {/* Modal oynasi */}
       <ModalGroups
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleGroupSuccess}
-        editData={editingGroup}
-        isEditMode={isEditMode}
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+        // onSuccess={}
+        // editData={}
+        // isEditMode={}
       />
     </div>
   );
