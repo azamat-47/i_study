@@ -1,10 +1,17 @@
+import { Toaster } from 'react-hot-toast';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
   // const token = localStorage.getItem('token');
-  const token  = true
+  const token = localStorage.getItem("accessToken")
 
-  return token ? <Outlet /> : <Navigate to="/login" />;
+  return token ? <>
+    <Toaster
+      position="top-center"
+      reverseOrder={false}
+    />
+    <Outlet />
+  </> : <Navigate to="/login" />;
 };
 
 export default ProtectedRoute;

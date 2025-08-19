@@ -8,6 +8,7 @@ import Payment from "../pages/main/Payment";
 import Students from "../pages/main/Students";
 import App from "../App";
 import Settings from "../pages/main/Settings";
+import Teachers from "../pages/main/Teachers";
 
 const router = createBrowserRouter([
     {
@@ -29,7 +30,8 @@ const router = createBrowserRouter([
                     { index: true, element: <Main /> },
                     { path: "/payment", element: <Payment /> },
                     { path: "/students", element: <Students /> },
-                    { path: "/settings", element: <Settings /> }
+                    { path: "/teachers", element: <Teachers /> },
+                    { path: "/settings", element: <Settings /> },
                 ]
             }
         ]
