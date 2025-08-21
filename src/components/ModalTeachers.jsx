@@ -8,20 +8,6 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
     const [form] = Form.useForm();
     const { addTeacherMutation } = useTeacher();
 
-    // // Agar teacher mavjud bo'lsa, formni tahrirlash uchun to'ldiramiz
-    // useEffect(() => {
-    //     if (teacher) {
-    //         form.setFieldsValue({
-    //             username: teacher.username,
-    //             name: teacher.name,
-    //             email: teacher.email,
-    //             phone: teacher.phone,
-    //             salary: teacher.salary,
-    //         });
-    //     } else {
-    //         form.resetFields();
-    //     }
-    // }, [teacher, form]);
 
     const handleFinish = (values) => {
         
@@ -54,23 +40,29 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
                 <Form.Item
                     label="Username"
                     name="username"
-                    rules={[{ required: true, message: "Username kiriting!" }]}
+                    rules={[
+                        { required: true, message: "Username kiriting!" },
+                        { min: 6, message: "Username kamida 6 belgidan bo‘lishi kerak!" },
+                      ]}
                 >
                     <Input />
                 </Form.Item>
 
                 {!teacher && (
                     <Form.Item
-                        label="Password"
+                        label="Parol"
                         name="password"
-                        rules={[{ required: true, message: "Password kiriting!" }]}
+                        rules={[
+                            { required: true, message: "Password kiriting!" },
+                            { min: 6, message: "Parol kamida 6 belgidan bo'lishi kerak!" },
+                        ]}
                     >
                         <Input.Password />
                     </Form.Item>
                 )}
 
                 <Form.Item
-                    label="Name"
+                    label="Ism Familiya"
                     name="name"
                     rules={[{ required: true, message: "Name kiriting!" }]}
                 >
@@ -89,15 +81,18 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
                 </Form.Item>
 
                 <Form.Item
-                    label="Phone"
+                    label="Telefon Raqam"
                     name="phone"
-                    rules={[{ required: true, message: "Phone kiriting!" }]}
+                    
+                    rules={[
+                        { required: true, message: "Phone kiriting!" }                        
+                    ]}
                 >
                     <Input />
                 </Form.Item>
 
                 <Form.Item
-                    label="Salary"
+                    label="Maosh"
                     name="salary"
                     rules={[{ required: true, message: "Salary kiriting!" }]}
                 >

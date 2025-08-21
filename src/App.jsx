@@ -85,7 +85,7 @@ const App = () => {
             />
           )}
 
-          <Search placeholder="O'quvchilarni qidirish..." onSearch={null} enterButton className='md:w-1/2! ml-3' />
+          {/* <Search placeholder="O'quvchilarni qidirish..." onSearch={null} enterButton className='md:w-1/2! ml-3' /> */}
 
           <div className='flex items-center gap-3'>
             <Popconfirm

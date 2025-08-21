@@ -1,8 +1,9 @@
 // TeachersPage.js
 import React, { useState } from "react";
-import { Button, Table, Space } from "antd";
+import { Button, Table, Space, Popconfirm } from "antd";
 import useTeacher from "../../hooks/useTeacher";
 import ModalTeachers from "../../components/ModalTeachers";
+import ModalTeaEdit from "../../components/ModalTeaEdit";
 
 const TeachersPage = () => {
     const { getTeachers, deleteTeacherMutation } = useTeacher();
@@ -14,10 +15,10 @@ const TeachersPage = () => {
 
     const columns = [
         // { title: "Username", dataIndex: "username", key: "username" },
-        { title: "Name", dataIndex: "name", key: "name" },
+        { title: "Ism", dataIndex: "name", key: "name" },
         { title: "Email", dataIndex: "email", key: "email" },
-        { title: "Phone", dataIndex: "phone", key: "phone" },
-        { title: "Salary", dataIndex: "salary", key: "salary" },
+        { title: "Telefon", dataIndex: "phone", key: "phone" },
+        { title: "Maosh", dataIndex: "salary", key: "salary" },
         {
             title: "Actions",
             key: "actions",
@@ -30,14 +31,16 @@ const TeachersPage = () => {
                             setModalVisible(true);
                         }}
                     >
-                        Edit
+                        O'zgartirish
                     </Button>
-                    <Button
-                        danger
-                        onClick={() => deleteTeacherMutation.mutate(record.id)}
+                    <Popconfirm
+                        title="Rostdan ham uchirishni holaysizmi?"
+                        onConfirm={() => deleteTeacherMutation.mutate(record.id)}
+                        okText="Ha"
+                        cancelText="Yo"
                     >
-                        Delete
-                    </Button>
+                        <Button danger>O'chirish</Button>
+                    </Popconfirm>
                 </Space>
             ),
         },
@@ -53,8 +56,20 @@ const TeachersPage = () => {
                     setModalVisible(true);
                 }}
             >
-                Add Teacher
+                Yangi Ustoz qo'shish
             </Button>
+
+            {/* Edit teacher modal */}
+            {selectedTeacher && (
+                <ModalTeaEdit
+                    visible={modalVisible}
+                    onClose={() => {
+                        setModalVisible(false);
+                        setSelectedTeacher(null);
+                    }}
+                    teacher={selectedTeacher}
+                />
+            )}
 
             <Table
                 dataSource={getTeachers.data}
