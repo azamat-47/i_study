@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Table, Popconfirm } from "antd";
+import { Button, Table, Popconfirm, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import useStudents from "../../hooks/useStudents";
 import AddStudentModal from "../../components/students-modal/AddStudentModal";
@@ -15,6 +15,14 @@ const Students = () => {
 
   if (GetStudents.isLoading) return <p>Yuklanmoqda...</p>;
   if (GetStudents.isError) return <p>Xatolik: {GetStudents.error.message}</p>;
+  
+  const students = GetStudents.data.map((student) => ({
+    ...student,
+    key: student.id,
+    courses: student.courses.map((course) => course.name  )// kurs nomlarini olish va 10 ta belgigacha qisqartirish va ohiraga ...
+  }));
+
+  console.log("Mapped Students:", students);
 
   const columns = [
     { title: "Ismi", dataIndex: "name", key: "name" },
@@ -25,9 +33,9 @@ const Students = () => {
       title: "Amallar",
       key: "actions",
       render: (_, record) => (
-        <>
+        <Space>
           <Button
-            type="link"
+            type="primary"            
             onClick={() => {
               setSelectedStudent(record);
               setEditModalVisible(true);
@@ -41,9 +49,9 @@ const Students = () => {
             okText="Ha"
             cancelText="Yo'q"
           >
-            <Button danger type="link">O'chirish</Button>
+            <Button danger type="primary">O'chirish</Button>
           </Popconfirm>
-        </>
+        </Space>
       ),
     },
   ];
@@ -57,7 +65,7 @@ const Students = () => {
         </Button>
       </div>
 
-      <Table dataSource={GetStudents.data || []} columns={columns} rowKey="id" />
+      <Table dataSource={students || []} columns={columns} rowKey="id" />
 
       {/* Add Modal */}
       <AddStudentModal visible={isAddModalVisible} onClose={() => setAddModalVisible(false)} />

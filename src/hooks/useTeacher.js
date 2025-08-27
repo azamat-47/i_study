@@ -44,11 +44,15 @@ const Put_Teacher = async ({ id, username, name, email, phone, salary, userId })
   
 
 const Delete_Teacher = async (id) => {
-    if (!id) throw new Error("Id talab Qilinadida!")
-    const response = API.delete(`/admin/teachers/${id}`)
+    if (!id) throw new Error("Id talab Qilinadida!");
+
+    console.log("Delete_Teacher id:", id);
+    
+    
+    const response = await API.delete(`/api/admin/teachers/${id}`);
     
 
-    return response.data
+    return response.data;
 }
 
 const useTeacher = () => {
@@ -80,6 +84,7 @@ const useTeacher = () => {
             queryClient.invalidateQueries({ queryKey: ["teachers"] });
         },
         onError: (error) => {
+            console.log("Delete_Teacher error:", error);            
             toast.error(error.message || "Xatolik yuz berdi!");
         }
     });

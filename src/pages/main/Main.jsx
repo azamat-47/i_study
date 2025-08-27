@@ -13,7 +13,7 @@ const [selectedCourse, setSelectedCourse] = useState(null);
 // Avval query chaqirib qo‘yamiz
 const studentsQuery = getStudentsByCourseId(10);
 
-if (getCourses.isLoading || studentsQuery.isLoading) return <p>Loading...</p>;
+if (getCourses.isLoading || studentsQuery.isLoading) return <p>Yuklanmoqda...</p>;
 if (getCourses.isError) return <p>Error: {getCourses.error.message}</p>;
 if (studentsQuery.isError) return <p>Error: {studentsQuery.error.message}</p>;
 
@@ -22,7 +22,7 @@ console.log("Students by Course ID:", studentsQuery.data);
   
   
 
-
+  
   const columns = [
     { title: "Kurs nomi", dataIndex: "name", key: "name" },
     { title: "Ta'rif", dataIndex: "description", key: "description" },

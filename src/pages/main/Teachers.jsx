@@ -10,13 +10,24 @@ const TeachersPage = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState(null);
 
-    if (getTeachers.isLoading) return <p>Loading...</p>;
+    if (getTeachers.isLoading) return <p>Yuklanmoqda...</p>;
     if (getTeachers.isError) return <p>Error: {getTeachers.error.message}</p>;
 
-    console.log("Teachers:", getTeachers.data);
+    const teachers = getTeachers.data.map((item) => (
+        { 
+            key: item.user.id,        // yoki id bo‘lmasa username unique bo‘lsin
+            username: item.user.username,
+            name: item.name,
+            email: item.email,
+            phone: item.phone,
+            salary: item.salary
+          }
+    ))
 
+    console.log("Mapped Teachers:", teachers);
+    
     const columns = [
-        // { title: "Username", dataIndex: "username", key: "username" },
+        { title: "Username", dataIndex: "username", key: "username" },
         { title: "Ism", dataIndex: "name", key: "name" },
         { title: "Email", dataIndex: "email", key: "email" },
         { title: "Telefon", dataIndex: "phone", key: "phone" },
@@ -37,7 +48,7 @@ const TeachersPage = () => {
                     </Button>
                     <Popconfirm
                         title="Rostdan ham uchirishni holaysizmi?"
-                        onConfirm={() => deleteTeacherMutation.mutate(record.id)}
+                        onConfirm={() => deleteTeacherMutation.mutate(record.key)}
                         okText="Ha"
                         cancelText="Yo"
                     >
@@ -74,7 +85,7 @@ const TeachersPage = () => {
             )}
 
             <Table
-                dataSource={getTeachers.data}
+                dataSource={teachers}
                 columns={columns}
                 rowKey="id"
             />

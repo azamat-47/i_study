@@ -6,10 +6,11 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
   const [form] = Form.useForm();
   const { updateTeacherMutation } = useTeacher();
 
+  
   useEffect(() => {
     if (teacher) {
       form.setFieldsValue({
-        username: teacher.user?.username,
+        username: teacher.username,
         name: teacher.name,
         email: teacher.email,
         phone: teacher.phone,
@@ -21,14 +22,13 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
 
   const handleFinish = (values) => {
     const payload = {
-      id: teacher.id,
-      userId: teacher.user?.id,
+      id: teacher.key,
+      userId: teacher.key,
       username: values.username,
       name: values.name,
       email: values.email,
       phone: values.phone,
-      salary: values.salary,
-      user: {},
+      salary: values.salary
     };
 
     // password faqat kiritilgan bo‘lsa yuborilsin
@@ -36,6 +36,7 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
       payload.user.password = values.password;
     }
 
+    console.log("Update Payload:", payload);  
     updateTeacherMutation.mutate(payload, { onSuccess: onClose });
   };
 
@@ -57,16 +58,16 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
         <Form.Item
           label="Username"
           name="username"
-          rules={[
-            { required: true, message: "Username kiriting!" },
-            { min: 6, message: "Username kamida 6 belgidan bo‘lishi kerak!" },
-          ]}
+          // rules={[
+          //   { required: true, message: "Username kiriting!" },
+          //   { min: 6, message: "Username kamida 6 belgidan bo‘lishi kerak!" },
+          // ]}
         >
-          <Input />
+          <Input disabled/>
         </Form.Item>
 
         <Form.Item
-          label="Password"
+          label="Yangi Parol"
           name="password"
           rules={[
             { min: 6, message: "Password kamida 6 belgidan bo‘lishi kerak!" },
@@ -76,7 +77,7 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
         </Form.Item>
 
         <Form.Item
-          label="Name"
+          label="Ism"
           name="name"
           rules={[{ required: true, message: "Name kiriting!" }]}
         >
@@ -100,7 +101,7 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
         </Form.Item>
 
         <Form.Item
-          label="Salary"
+          label="Maosh"
           name="salary"
           rules={[{ required: true, message: "Salary kiriting!" }]}
         >

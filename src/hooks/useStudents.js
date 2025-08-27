@@ -15,7 +15,7 @@ const getStudentById = async (id) => {
 }
 
 const postStudent = async (payload) => {
-    if (!payload.name || !payload.phone || !payload.email || !payload.phone || !payload.enrollmentDate || !payload.courses) {
+    if (!payload.name || !payload.phone || !payload.email || !payload.phone || !payload.enrollmentDate|| payload.courseIds.length===0 ) {
         throw new Error("Maydonlarni to'ldirish talab qilinadi!");
     }
     const response = await API.post("/students", payload);
@@ -23,7 +23,7 @@ const postStudent = async (payload) => {
 }
 
 const putStudent = async (payload) => {
-    if (!payload.id || !payload.name || !payload.phone || !payload.email || !payload.phone || !payload.enrollmentDate || !payload.courses) {
+    if (!payload.id || !payload.name || !payload.phone || !payload.email || !payload.phone || !payload.enrollmentDate || payload.courseIds.length===0 ) {
         throw new Error("Maydonlarni to'ldirish talab qilinadi!");
     }
     const response = await API.put(`/students/${payload.id}`, payload);
@@ -44,29 +44,29 @@ const useStudents = () => {
         queryFn: getStudents
     });
 
-    const GetStudentById = (id) => useQuery({
-        queryKey: ["students", id],
-        queryFn: () => getStudentById(id),
-        enabled: !!id,
+    const GetStudentById = useQuery({
+        queryKey: ["students", "studentById"],
+        queryFn: getStudentById,
         onError: (err) => {
         console.error("GetStudentById error:", err);
         },
     });
 
-    const PostStudenst = async (payload) => useMutation({   
-        mutationFn: () => postStudent,
+    const PostStudent = useMutation({   
+        mutationFn: postStudent,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["students"] });
-            toast.success("Student qo'shildi!");
+          queryClient.invalidateQueries({ queryKey: ["students"] });
+          toast.success("Student qo'shildi!");
         },
         onError: (err) => {
-            console.error("PostStudent error:", err);
-            toast.error(err.message || "Student qo'shishda xatolik!");
+          console.error("PostStudent error:", err);
+          toast.error(err.message || "Student qo'shishda xatolik!");
         },
-    });
+      });
+      
 
-    const PutStudent = async (payload) => useMutation({
-        mutationFn: () => putStudent,
+    const PutStudent = useMutation({
+        mutationFn: putStudent,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["students"] });
             toast.success("Student o'zgartirildi!");
@@ -77,8 +77,8 @@ const useStudents = () => {
         },
     });
 
-    const DeleteStudent = async (id) => useMutation({
-        mutationFn: () => deleteStudent,
+    const DeleteStudent = useMutation({
+        mutationFn: deleteStudent,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["students"] });
             toast.success("Student o'chirildi!");
@@ -89,7 +89,7 @@ const useStudents = () => {
         },
     });
 
-    return { GetStudents, GetStudentById, PostStudenst, PutStudent, DeleteStudent };
+    return { GetStudents, GetStudentById, PostStudent, PutStudent, DeleteStudent };
     
 }
 
