@@ -1,30 +1,32 @@
 // Main.jsx
 import React, { useState } from "react";
-import { Button, Table, Space, Popconfirm } from "antd";
+import { Button, Table, Space, Popconfirm, Tooltip } from "antd";
 import useCourse from "../../hooks/useCourse";
 import CreateCourseModal from "../../components/course-modal/CreateCourseModal";
 import UpdateCourseModal from "../../components/course-modal/UpdateCourseModal";
+import { Link } from "react-router";
 
 const Main = () => {
-  const { getCourses, deleteCourseMutation, getStudentsByCourseId } = useCourse();
+  const { getCourses, deleteCourseMutation } = useCourse();
 const [modalVisible, setModalVisible] = useState(false);
 const [selectedCourse, setSelectedCourse] = useState(null);
 
-// Avval query chaqirib qo‘yamiz
-const studentsQuery = getStudentsByCourseId(10);
 
-if (getCourses.isLoading || studentsQuery.isLoading) return <p>Yuklanmoqda...</p>;
+if (getCourses.isLoading) return <p>Loading...</p>;
 if (getCourses.isError) return <p>Error: {getCourses.error.message}</p>;
-if (studentsQuery.isError) return <p>Error: {studentsQuery.error.message}</p>;
 
 console.log("Courses:", getCourses.data);
-console.log("Students by Course ID:", studentsQuery.data);
-  
   
 
   
   const columns = [
-    { title: "Kurs nomi", dataIndex: "name", key: "name" },
+    { title: "Kurs nomi", dataIndex: "name", key: "name",
+      render: (name, record) => (
+        <Tooltip title="Kurs sahifasiga o'tish">
+          <Link to={`/kurs/${record.id}`}>{name}</Link>
+        </Tooltip>
+      )
+     },
     { title: "Ta'rif", dataIndex: "description", key: "description" },
     { title: "Narxi (fee)", dataIndex: "fee", key: "fee" },
     {
@@ -45,7 +47,7 @@ console.log("Students by Course ID:", studentsQuery.data);
               setModalVisible(true);
             }}
           >
-            O‘zgartirish
+            O'zgartirish
           </Button>
           <Popconfirm
             title="Haqiqatan ham o'chirmoqchimisiz?"
@@ -66,11 +68,11 @@ console.log("Students by Course ID:", studentsQuery.data);
         type="primary"
         style={{ marginBottom: 16 }}
         onClick={() => {
-          setSelectedCourse(null); // yangi kurs qo‘shish rejimi
+          setSelectedCourse(null); // yangi kurs qo'shish rejimi
           setModalVisible(true);
         }}
       >
-        Yangi Kurs qo‘shish
+        Yangi Kurs qo'shish
       </Button>
 
       {/* Update modal */}
