@@ -15,7 +15,6 @@ const Login = () => {
         // Agar backenddan token kelsa
         if (data?.accessToken) {
           try {
-            localStorage.setItem("token", JSON.stringify(data.accessToken));
             message.success("Muvaffaqiyatli kirdingiz!");
             navigate("/"); // Asosiy sahifaga yo'naltirish
           } catch (err) {

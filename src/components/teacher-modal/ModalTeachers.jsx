@@ -1,7 +1,7 @@
 // TeacherModal.js
 import React, { useEffect } from "react";
 import { Modal, Form, Input, InputNumber, Button } from "antd";
-import useTeacher from "../hooks/useTeacher";
+import useTeacher from "../../hooks/useTeacher";
 
 
 const ModalTeachers = ({ visible, onClose, teacher }) => {
@@ -9,8 +9,8 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
     const { addTeacherMutation } = useTeacher();
 
 
-    const handleFinish = (values) => {
-        
+    const handleFinish = (values) => {     
+           
             addTeacherMutation.mutate(values, { onSuccess: onClose });
             console.log(values);
             

@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { Button, Table, Space, Popconfirm } from "antd";
 import useTeacher from "../../hooks/useTeacher";
-import ModalTeachers from "../../components/ModalTeachers";
-import ModalTeaEdit from "../../components/ModalTeaEdit";
+import ModalTeachers from "../../components/teacher-modal/ModalTeachers";
+import ModalTeaEdit from "../../components/teacher-modal/ModalTeaEdit";
 
 const TeachersPage = () => {
     const { getTeachers, deleteTeacherMutation } = useTeacher();
@@ -12,6 +12,8 @@ const TeachersPage = () => {
 
     if (getTeachers.isLoading) return <p>Loading...</p>;
     if (getTeachers.isError) return <p>Error: {getTeachers.error.message}</p>;
+
+    console.log("Teachers:", getTeachers.data);
 
     const columns = [
         // { title: "Username", dataIndex: "username", key: "username" },

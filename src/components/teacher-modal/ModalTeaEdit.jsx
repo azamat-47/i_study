@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, InputNumber, Button } from "antd";
-import useTeacher from "../hooks/useTeacher";
+import useTeacher from "../../hooks/useTeacher";
 
 const ModalTeaEdit = ({ visible, onClose, teacher }) => {
   const [form] = Form.useForm();

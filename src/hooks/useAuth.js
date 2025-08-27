@@ -4,7 +4,7 @@ import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
 
 const Login = async ({username, password}) => {
-    const response = await API.post("/auth/login", {username, password})
+    const response = await API.post("/api/auth/login", {username, password})
     
     if (response.status === 200) {
         return response.data
@@ -21,7 +21,7 @@ const useAuth = () => {
         mutationFn: Login,
         onSuccess(data){
             const {accessToken, refreshToken} = data
-            localStorage.setItem("accessToken", accessToken)
+            localStorage.setItem("istudyAccessToken", accessToken)
             toast.success("Tizimga kirildi!")
             navigate("/")
         },
@@ -32,7 +32,7 @@ const useAuth = () => {
     })
 
     const logout = () => {
-        localStorage.removeItem("accessToken");
+        localStorage.removeItem("istudyAccessToken");
         navigate("/login")
     }
 

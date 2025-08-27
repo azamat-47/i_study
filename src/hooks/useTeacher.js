@@ -9,15 +9,14 @@ const Add_Teacher = async( {username, password, name, email, phone, salary} ) =>
       }
     console.log("Add_Teacher", {username, password, name, email, phone, salary});
     
-    const response = await API.post("/admin/teachers", {username, password, name, email, phone, salary})
+    const response = await API.post("/api/admin/teachers", {username, password, name, email, phone, salary})
     console.log("response {post}", response);
     
     return response.data;
 }
 
 const Fetch_Teachers = async () => {
-    const response = await API.get("/teachers")
-    console.log("{get} response", response);
+    const response = await API.get("/api/teachers")
     
     return response.data;
 }
@@ -27,7 +26,7 @@ const Put_Teacher = async ({ id, username, name, email, phone, salary, userId })
       throw new Error("Maydonlarni to'ldirish talab qilinadi!");
     }
   
-    const response = await API.put(`/admin/teachers/${id}`, {
+    const response = await API.put(`/api/admin/teachers/${id}`, {
       id,
       name,
       email,

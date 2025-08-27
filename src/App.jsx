@@ -11,6 +11,7 @@ import { CiSquareChevLeft } from 'react-icons/ci';
 const { Search } = Input;
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
+import useAuth from './hooks/useAuth';
 
 import main_logo from "./assets/mainLogo.png"
 import { GiTeacher } from 'react-icons/gi';
@@ -23,6 +24,7 @@ const App = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  const { logout } = useAuth();
   
   
 
@@ -34,7 +36,7 @@ const App = () => {
   }, [screens]);
 
   const handleConfirm = () => {
-    console.log('Confirmed exit');
+    logout();
   };
 
   const menuItems = [
