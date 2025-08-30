@@ -9,12 +9,12 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
     const { addTeacherMutation } = useTeacher();
 
 
-    const handleFinish = (values) => {     
-           
-            addTeacherMutation.mutate(values, { onSuccess: onClose });
-            console.log(values);
-            
-        
+    const handleFinish = (values) => {
+
+        addTeacherMutation.mutate(values, { onSuccess: onClose });
+        console.log(values);
+
+
     };
 
     return (
@@ -43,7 +43,7 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
                     rules={[
                         { required: true, message: "Username kiriting!" },
                         { min: 6, message: "Username kamida 6 belgidan bo‘lishi kerak!" },
-                      ]}
+                    ]}
                 >
                     <Input />
                 </Form.Item>
@@ -83,9 +83,9 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
                 <Form.Item
                     label="Telefon Raqam"
                     name="phone"
-                    
+
                     rules={[
-                        { required: true, message: "Phone kiriting!" }                        
+                        { required: true, message: "Phone kiriting!" }
                     ]}
                 >
                     <Input />
@@ -96,7 +96,14 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
                     name="salary"
                     rules={[{ required: true, message: "Salary kiriting!" }]}
                 >
-                    <InputNumber style={{ width: "100%" }} min={0} />
+                    <InputNumber
+                        style={{ width: "100%" }}
+                        min={0}
+                        formatter={(value) =>
+                            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+                        }
+                        parser={(value) => value.replace(/\s/g, "")}
+                    />
                 </Form.Item>
             </Form>
         </Modal>

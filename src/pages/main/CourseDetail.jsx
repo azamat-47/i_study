@@ -204,7 +204,7 @@ const CourseDetail = () => {
       <Card 
         title={
           <div style={{ fontSize: '18px' }}>
-            👨‍🎓 Talabalar ({course.students?.length || 0})
+            👨‍🎓 Talabalar {course.students?.length || 0} -nafar
           </div>
         }
       >

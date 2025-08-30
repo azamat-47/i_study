@@ -6,7 +6,7 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
   const [form] = Form.useForm();
   const { updateTeacherMutation } = useTeacher();
 
-  
+
   useEffect(() => {
     if (teacher) {
       form.setFieldsValue({
@@ -36,7 +36,7 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
       payload.user.password = values.password;
     }
 
-    console.log("Update Payload:", payload);  
+    console.log("Update Payload:", payload);
     updateTeacherMutation.mutate(payload, { onSuccess: onClose });
   };
 
@@ -58,12 +58,12 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
         <Form.Item
           label="Username"
           name="username"
-          // rules={[
-          //   { required: true, message: "Username kiriting!" },
-          //   { min: 6, message: "Username kamida 6 belgidan bo‘lishi kerak!" },
-          // ]}
+        // rules={[
+        //   { required: true, message: "Username kiriting!" },
+        //   { min: 6, message: "Username kamida 6 belgidan bo‘lishi kerak!" },
+        // ]}
         >
-          <Input disabled/>
+          <Input disabled />
         </Form.Item>
 
         <Form.Item
@@ -103,9 +103,16 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
         <Form.Item
           label="Maosh"
           name="salary"
-          rules={[{ required: true, message: "Salary kiriting!" }]}
+          rules={[{ required: true, message: "Maosh kiriting!" }]}
         >
-          <InputNumber style={{ width: "100%" }} min={0} />
+          <InputNumber
+            style={{ width: "100%" }}
+            min={0}
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+            }
+            parser={(value) => value.replace(/\s/g, "")}
+          />
         </Form.Item>
       </Form>
     </Modal>

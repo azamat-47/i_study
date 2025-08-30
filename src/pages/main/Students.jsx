@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Button, Table, Popconfirm, Space } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Button, Table, Popconfirm, Space, Tag } from "antd";
+import { CalendarOutlined, PlusOutlined } from "@ant-design/icons";
 import useStudents from "../../hooks/useStudents";
 import AddStudentModal from "../../components/students-modal/AddStudentModal";
 import EditStudentModal from "../../components/students-modal/EditStudentModal";
@@ -22,13 +22,24 @@ const Students = () => {
     courses: student.courses.map((course) => course.name  )// kurs nomlarini olish va 10 ta belgigacha qisqartirish va ohiraga ...
   }));
 
-  console.log("Mapped Students:", students);
+  console.log(" Students:", GetStudents.data);
 
   const columns = [
     { title: "Ismi", dataIndex: "name", key: "name" },
     { title: "Telefon", dataIndex: "phone", key: "phone" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Kurslar", dataIndex: "courses", key: "courses", render: (courses) => courses.join(", ") },
+    {
+      title: "Ro'yxatdan o'tgan sana",
+      dataIndex: 'enrollmentDate',
+      key: 'enrollmentDate',
+      render: (date) => (
+        <Space>
+          <CalendarOutlined style={{ color: '#faad14' }} />
+          <Tag color="blue">{date}</Tag>
+        </Space>
+      ),
+    },
     {
       title: "Amallar",
       key: "actions",

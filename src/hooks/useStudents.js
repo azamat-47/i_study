@@ -8,11 +8,11 @@ const getStudents = async () => {
     return response.data;
 }
 
-const getStudentById = async (id) => {
-    if (!id) throw new Error("Id talab qilinadi!");
-    const response = await API.get(`/students/${id}`);
-    return response.data;
-}
+// const getStudentById = async (id) => {
+//     if (!id) throw new Error("Id talab qilinadi!");
+//     const response = await API.get(`/students/${id}`);
+//     return response.data;
+// }
 
 const postStudent = async (payload) => {
     if (!payload.name || !payload.phone || !payload.email || !payload.phone || !payload.enrollmentDate|| payload.courseIds.length===0 ) {
@@ -26,7 +26,17 @@ const putStudent = async (payload) => {
     if (!payload.id || !payload.name || !payload.phone || !payload.email || !payload.phone || !payload.enrollmentDate || payload.courseIds.length===0 ) {
         throw new Error("Maydonlarni to'ldirish talab qilinadi!");
     }
-    const response = await API.put(`/students/${payload.id}`, payload);
+
+    const mainPayLoad = {  
+        name: payload.name,
+        phone: payload.phone,
+        email: payload.email,
+        enrollmentDate: payload.enrollmentDate,
+        courseIds: payload.courseIds
+    }
+    console.log(`/students/${payload.id}`, mainPayLoad);
+    
+    const response = await API.put(`/students/${payload.id}`, mainPayLoad);
     return response.data;
 }
 
@@ -44,13 +54,6 @@ const useStudents = () => {
         queryFn: getStudents
     });
 
-    const GetStudentById = useQuery({
-        queryKey: ["students", "studentById"],
-        queryFn: getStudentById,
-        onError: (err) => {
-        console.error("GetStudentById error:", err);
-        },
-    });
 
     const PostStudent = useMutation({   
         mutationFn: postStudent,
@@ -89,7 +92,7 @@ const useStudents = () => {
         },
     });
 
-    return { GetStudents, GetStudentById, PostStudent, PutStudent, DeleteStudent };
+    return { GetStudents, PostStudent, PutStudent, DeleteStudent };
     
 }
 

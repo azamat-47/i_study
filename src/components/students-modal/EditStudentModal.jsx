@@ -34,9 +34,6 @@ const EditStudentModal = ({ visible, onClose, student }) => {
         return matchedOption ? matchedOption.value : null;
       }).filter(Boolean) || []; // null qiymatlarni olib tashlash
       
-      console.log("Student courses:", student.courses);
-      console.log("Matched course IDs:", studentCourseIds);
-      
       form.setFieldsValue({
         ...student,
         enrollmentDate: dayjs(student.enrollmentDate),

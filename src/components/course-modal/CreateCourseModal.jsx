@@ -10,35 +10,42 @@ const CreateCourseModal = ({ visible, onClose }) => {
   const [form] = Form.useForm();
   const { addCourseMutation } = useCourse();
   const { getTeachers } = useTeacher();
+  
 
   const handleFinish = (values) => {
-    // Tanlangan ID bo‘yicha teacher objectni topamiz
+    // Tanlangan ID bo'yicha teacher objectni topamiz
     const selectedTeacher = getTeachers.data.find(
-      (t) => t.id === values.teacherId      
+      (t) => t.id === values.teacherId
     );
 
     console.log(getTeachers.data);
-    
+
 
     console.log("Selected Teacher:", selectedTeacher);
-    
-  
+
+
     const payload = {
       name: values.name,
       description: values.description,
       fee: values.fee,
-      teachers: [selectedTeacher], // to‘liq obyekt yuboriladi
+      teachers: [selectedTeacher], // to'liq obyekt yuboriladi
     };
 
     console.log("CreateCourseModal payload:", payload);
+
+
+    addCourseMutation.mutate(payload, {
+      onSuccess: () => {
+        onClose();           // modal yopish
+        form.resetFields();  // formani tozalash
+      },
+    });
     
-  
-    addCourseMutation.mutate(payload, { onSuccess: onClose });
   };
-  
+
   return (
     <Modal
-      title="Yangi kurs qo‘shish"
+      title="Yangi kurs qo'shish"
       open={visible}
       onCancel={onClose}
       footer={[
@@ -77,7 +84,14 @@ const CreateCourseModal = ({ visible, onClose }) => {
           name="fee"
           rules={[{ required: true, message: "Narxni kiriting!" }]}
         >
-          <InputNumber style={{ width: "100%" }} min={0} />
+          <InputNumber
+            style={{ width: "100%" }}
+            min={0}
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+            }
+            parser={(value) => value.replace(/\s/g, "")}
+          />
         </Form.Item>
 
         <Form.Item
