@@ -59,7 +59,7 @@ const Post_Expense_Teacher_Salary_Full = async (payload) => {
     if (!payload.teacherId || !payload.month ) {
         throw new Error("Maydonlarni to'ldirish talab qilinadi!");
     }
-    const response = await API.post("/api/admin/pay-teachers-salary", payload);
+    const response = await API.post("/api/admin/pay-teacher-salary", payload);
     return response.data;
 }
 

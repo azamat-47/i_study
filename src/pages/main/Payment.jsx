@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Table, Button, Modal, Form, Input, Select, DatePicker, Card, Statistic, Tabs, Space, Popconfirm, message, Empty, Spin, Alert, Row, Col, Tag } from 'antd';
-import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled, ShoppingOutlined, BankOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled, ShoppingOutlined, BankOutlined, UserAddOutlined } from '@ant-design/icons';
 import usePayment from '../../hooks/usePayment';
 import dayjs from 'dayjs';
 import PaymentAddModal from '../../components/payment-modal/PaymentAddModal';
 import toast from 'react-hot-toast';
+import ExpensesAddModal from '../../components/payment-modal/ExpensesAddModal';
+import ExpensesTeachersModal from '../../components/payment-modal/ExpensesTeachersModal';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -16,7 +18,7 @@ const Payment = () => {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [activeTab, setActiveTab] = useState('1');
   const [openPopConfirmKey, setOpenPopConfirmKey] = useState(null);
-  const [expenseForm] = Form.useForm();
+  const [openAddTeacherExpenses, setOenAddTeacherExpenses] = useState(false);
 
   // usePayment hook'ini parametrlar bilan chaqirish
   const {
@@ -28,7 +30,6 @@ const Payment = () => {
     postPaymentMutation,
     fetchFinancialSummary,
     deletePaymentMutation,
-    postExpenseMutation,
     deleteExpenseMutation,
     postTeacherSalaryExpenseMutation,
     refetchPaymentData,
@@ -103,33 +104,14 @@ const Payment = () => {
       await postPaymentMutation.mutateAsync(payload);
       setOpenPopConfirmKey(null);
       toast.success("To'lov muvaffaqiyatli qo'shildi!");
-      
+
     } catch (error) {
       console.error('Post error:', error);
       setOpenPopConfirmKey(null);
     }
   }, [postPaymentMutation]);
 
-  // Xarajat qo'shish
-  const handleAddExpense = useCallback(async (values) => {
-    try {
-      const payload = {
-        name: values.name,
-        amount: parseFloat(values.amount),
-        expenseDate: values.expenseDate.format('YYYY-MM-DD'),
-        expenseMonth: values.expenseDate.format('YYYY-MM'),
-        description: values.description || ''
-      };
 
-      await postExpenseMutation.mutateAsync(payload);
-      setIsExpenseModalVisible(false);
-      expenseForm.resetFields();
-      toast.success("Xarajat muvaffaqiyatli qo'shildi!");
-    } catch (error) {
-      console.error('Add expense error:', error);
-      toast.error("Xarajat qo'shishda xatolik yuz berdi");
-    }
-  }, [postExpenseMutation, expenseForm]);
 
   // O'qituvchi maoshini to'lash
   const handlePayTeacherSalary = useCallback(async (teacherId, teacherName) => {
@@ -409,15 +391,16 @@ const Payment = () => {
   const renderFinancialSummary = () => {
     if (!fetchFinancialSummary.data) return null;
 
-    const { totalIncome, totalExpenses, netProfit } = fetchFinancialSummary.data;
+    const { revenue, recordedExpenses, netProfit } = fetchFinancialSummary.data;
 
     return (
       <Row gutter={[16, 16]} className="mb-8">
         <Col xs={24} sm={12} md={8}>
           <Card className="border-gray-700 bg-gradient-to-r from-green-900 to-green-800">
+            {console.log(fetchFinancialSummary.data)}
             <Statistic
-              title={<span className="text-gray-300">Jami <Tag>Oylik</Tag>Daromad</span>}
-              value={totalIncome || 0}
+              title={<span className="text-gray-300">Jami <Tag>Oylik</Tag> Kurslar Daromadi</span>}
+              value={ revenue || 0}
               suffix="so'm"
               valueStyle={{ color: '#10b981' }}
               prefix={<DollarOutlined />}
@@ -428,7 +411,7 @@ const Payment = () => {
           <Card className="border-gray-700 bg-gradient-to-r from-red-900 to-red-800">
             <Statistic
               title={<span className="text-gray-300">Jami <Tag>Oylik</Tag>Xarajat</span>}
-              value={totalExpenses || 0}
+              value={recordedExpenses || 0}
               suffix="so'm"
               valueStyle={{ color: '#ef4444' }}
               prefix={<DollarOutlined />}
@@ -593,6 +576,15 @@ const Payment = () => {
                 <Space>
                   <Button
                     type="primary"
+                    icon={<UserAddOutlined />}
+                    onClick={() => setOenAddTeacherExpenses(true)}
+                    className="bg-purple-600! hover:bg-purple-500!"
+                    >
+
+                    O'qituvchi Maoshini To'lash
+                  </Button>
+                  <Button
+                    type="primary"
                     icon={<PlusOutlined />}
                     onClick={() => setIsExpenseModalVisible(true)}
                     className="bg-red-600 hover:bg-red-500"
@@ -733,100 +725,18 @@ const Payment = () => {
         />
 
         {/* Expense Add Modal */}
-        <Modal
-          title={<span className="text-gray-200">Yangi Xarajat Qo'shish</span>}
-          open={isExpenseModalVisible}
-          onCancel={() => {
+        <ExpensesAddModal
+          isOpen={isExpenseModalVisible}
+          onClose={() => {
             setIsExpenseModalVisible(false);
-            expenseForm.resetFields();
           }}
-          footer={null}
-          className="dark-modal"
-        >
-          <Form
-            form={expenseForm}
-            layout="vertical"
-            onFinish={handleAddExpense}
-            className="space-y-4"
-          >
-            <Form.Item
-              name="name"
-              label={<span className="text-gray-200">Xarajat nomi</span>}
-              rules={[
-                { required: true, message: 'Xarajat nomini kiriting!' }
-              ]}
-            >
-              <Input
-                placeholder="Xarajat nomini kiriting"
-                className="dark-input"
-              />
-            </Form.Item>
+        />
 
-            <Form.Item
-              name="amount"
-              label={<span className="text-gray-200">Miqdor (so'm)</span>}
-              rules={[
-                { required: true, message: 'Xarajat miqdorini kiriting!' },
-                { 
-                  type: 'number',
-                  min: 0,
-                  message: 'Miqdor 0 dan katta bo\'lishi kerak!',
-                  transform: (value) => value ? Number(value) : value
-                }
-              ]}
-            >
-              <Input
-                type="number"
-                placeholder="Xarajat miqdorini kiriting"
-                className="dark-input"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="expenseDate"
-              label={<span className="text-gray-200">Xarajat sanasi</span>}
-              rules={[
-                { required: true, message: 'Xarajat sanasini tanlang!' }
-              ]}
-            >
-              <DatePicker
-                className="dark-datepicker w-full"
-                placeholder="Sanani tanlang"
-                format="DD.MM.YYYY"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="description"
-              label={<span className="text-gray-200">Tavsif</span>}
-            >
-              <Input.TextArea
-                placeholder="Xarajat haqida qo'shimcha ma'lumot"
-                className="dark-input"
-                rows={3}
-              />
-            </Form.Item>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                onClick={() => {
-                  setIsExpenseModalVisible(false);
-                  expenseForm.resetFields();
-                }}
-              >
-                Bekor qilish
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={postExpenseMutation.isLoading}
-                className="bg-red-600 hover:bg-red-500"
-              >
-                Xarajat Qo'shish
-              </Button>
-            </div>
-          </Form>
-        </Modal>
+        {/* Expense add fo teachers Teachers  */}
+        <ExpensesTeachersModal
+          isOpen={openAddTeacherExpenses}
+          onClose={() => setOenAddTeacherExpenses(false)}
+         />
       </div>
     </div>
   );
