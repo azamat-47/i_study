@@ -1,130 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import { MdOutlineDelete } from "react-icons/md";
-import { CiEdit } from "react-icons/ci";
-import axios from 'axios';
-import ModalGroups from '../../components/ModalGroups'; 
-
-const groups = []
+// Main.jsx
+import React, { useState } from "react";
+import { Button, Table, Space, Popconfirm, Tooltip, Tag } from "antd";
+import useCourse from "../../hooks/useCourse";
+import CreateCourseModal from "../../components/course-modal/CreateCourseModal";
+import UpdateCourseModal from "../../components/course-modal/UpdateCourseModal";
+import { DollarOutlined, PlusOutlined } from "@ant-design/icons";
+import { Link } from "react-router";
 
 const Main = () => {
+  const { getCourses, deleteCourseMutation } = useCourse();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
 
-  const [openModal, setOpenModal] = useState(false)
- 
-  function addGroup() {
-    setOpenModal(true)
-  }
-  
-  // Qiymatni formatlash
-  const formatValue = (value) =>
-    value && String(value).trim().length > 0 ? value : '-';
-  
-  // Narxni formatlash
-  const formatFee = (fee) => {
-    if (typeof fee !== 'number') return '-';
-    return `${fee.toLocaleString('uz-UZ')} so'm`;
-  }
 
-  
-  return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 bg-gray-900 min-h-screen">
-      {/* Sahifa sarlavhasi */}
-      <div className="max-w-7xl mx-auto mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-300 mb-2">
-          Guruhlar
-        </h1>
-        <p className="text-sm sm:text-base text-gray-400">
-          O'quv markazidagi mavjud guruhlarni boshqarish
-        </p>
-      </div>
+  if (getCourses.isLoading) return <p>Loading...</p>;
+  if (getCourses.isError) return <p>Error: {getCourses.error.message}</p>;
 
-      {/* Guruhlar bo'limi */}
-      <div className="max-w-7xl mx-auto bg-gray-800 rounded-lg shadow-lg p-4 sm:p-6 border border-gray-700">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-white">
-            Guruhlar ro'yxati
-          </h2>
-          <button
-            onClick={addGroup}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
+  console.log("Courses:", getCourses.data);
+
+
+
+
+  const columns = [
+    {
+      title: "Kurs nomi", dataIndex: "name", key: "name",
+      render: (name, record) => (
+        <Tooltip title="Kurs sahifasiga o'tish">
+          <Link to={`/kurs/${record.id}`}>{name}</Link>
+        </Tooltip>
+      )
+    },
+    { title: "Ta'rif", dataIndex: "description", key: "description" },
+    {
+      title: "Narxi (fee)", dataIndex: "fee", key: "fee",
+      render: (fee) => (
+        <Space>
+          <DollarOutlined style={{ color: '#fa8c16' }} />
+          <Tag color="cyan">{fee?.toLocaleString()} so'm</Tag>
+        </Space>
+      ),
+    },
+    {
+      title: "Ustoz",
+      key: "teachers",
+      render: (_, record) =>
+        record.teachers?.map((t) => t.name).join(", ") || "Ustoz belgilanmagan",
+    },
+    {
+      title: "Amallar",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => {
+              setSelectedCourse(record);
+              setModalVisible(true);
+            }}
           >
-            Guruh qo'shish
-          </button>
-        </div>
+            O'zgartirish
+          </Button>
+          <Popconfirm
+            title="Haqiqatan ham o'chirmoqchimisiz?"
+            onConfirm={() => deleteCourseMutation.mutate(record.id)}
+            okText="Ha"
+            cancelText="Yo'q"
+          >
+            <Button danger>O'chirish</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-full">
-            <thead>
-              <tr className="border-b border-gray-600">
-                <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Guruh nomi
-                </th>
-                <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Izoh
-                </th>
-                <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Narxi
-                </th>
-                <th className="text-left py-3 px-4 text-gray-300 font-medium text-sm sm:text-base">
-                  Amallar
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.length > 0 ? (
-                groups.map((group) => (
-                  <tr
-                    key={group.id}
-                    className="border-b border-gray-700 hover:bg-gray-750 transition-colors"
-                  >
-                    <td className="py-4 px-4 text-white text-sm sm:text-base font-medium">
-                      {formatValue(group.name)}
-                    </td>
-                    <td className="py-4 px-4 text-gray-300 text-sm sm:text-base">
-                      {formatValue(group.description)}
-                    </td>
-                    <td className="py-4 px-4 text-green-400 text-sm sm:text-base">
-                      {formatFee(group.fee)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => editGroup(group)}
-                          className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors cursor-pointer px-3 py-1 rounded hover:bg-blue-400 hover:bg-opacity-10"
-                        >
-                          <CiEdit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => removeGroup(group.id)}
-                          className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors cursor-pointer px-3 py-1 rounded hover:bg-red-400 hover:bg-opacity-10"
-                        >
-                          <MdOutlineDelete className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="py-8 px-4 text-center text-gray-400 text-sm sm:text-base"
-                  >
-                    Hali guruh qo'shilmagan
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+  return (
+    <div>
+      <div className="flex justify-between mb-4">
+        <h2 className="text-xl font-bold">Guruhlar</h2>
+        <Button
+          type="primary"
+          style={{ marginBottom: 16 }}
+          onClick={() => {
+            setSelectedCourse(null); // yangi kurs qo'shish rejimi
+            setModalVisible(true);
+          }}
+          icon={<PlusOutlined />}
+        >
+          Yangi Kurs qo'shish
+        </Button>
       </div>
 
-      {/* Modal oynasi */}
-      <ModalGroups
-        isOpen={openModal}
-        onClose={() => setOpenModal(false)}
-        // onSuccess={}
-        // editData={}
-        // isEditMode={}
+      {/* Update modal */}
+      {selectedCourse && (
+        <UpdateCourseModal
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setSelectedCourse(null);
+          }}
+          course={selectedCourse}
+        />
+      )}
+
+      <Table
+        dataSource={getCourses.data}
+        columns={columns}
+        rowKey="id"
+      />
+
+      {/* Create modal */}
+      <CreateCourseModal
+        visible={modalVisible && !selectedCourse}
+        onClose={() => setModalVisible(false)}
       />
     </div>
   );

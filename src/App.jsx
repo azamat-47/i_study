@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { Avatar, Button, Input, Layout, Menu, Popconfirm, theme, Tooltip, Grid } from 'antd';
-import { AiFillSetting } from 'react-icons/ai';
 import { PiStudentFill } from 'react-icons/pi';
 import { MdGroups3, MdPayment } from 'react-icons/md';
-import { RiMenuFold2Fill, RiMenuUnfold2Fill } from 'react-icons/ri';
+import { RiInfoCardLine, RiMenuFold2Fill, RiMenuUnfold2Fill } from 'react-icons/ri';
 import { FaUserNurse } from 'react-icons/fa';
 import { CiSquareChevLeft } from 'react-icons/ci';
 
 const { Search } = Input;
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
+import useAuth from './hooks/useAuth';
 
 import main_logo from "./assets/mainLogo.png"
 import { GiTeacher } from 'react-icons/gi';
@@ -23,6 +23,7 @@ const App = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
+  const { logout } = useAuth();
   
   
 
@@ -34,15 +35,15 @@ const App = () => {
   }, [screens]);
 
   const handleConfirm = () => {
-    console.log('Confirmed exit');
+    logout();
   };
 
   const menuItems = [
     { key: '/', icon: <MdGroups3 size={20} />, link: "/", title:"Guruhlar" },
-    { key: '/payment', icon: <MdPayment size={20} />, link: "/payment" , title:"To'lovlar" },
-    { key: '/teachers', icon: <GiTeacher size={20} />, link: "/teachers", title: "Ustozlar" },
-    { key: '/students', icon: <PiStudentFill size={20} />, link: "/students", title:"O'quvchilar" },
-    { key: '/settings', icon: <AiFillSetting size={20} />, link: "/settings", title: "Sozlamalar" },
+    { key: '/tolovlar', icon: <MdPayment size={20} />, link: "/tolovlar" , title:"To'lovlar" },
+    { key: '/uqituvchilar', icon: <GiTeacher size={20} />, link: "/uqituvchilar", title: "Ustozlar" },
+    { key: '/uquvchilar', icon: <PiStudentFill size={20} />, link: "/uquvchilar", title:"O'quvchilar" },
+    { key: '/sayt_haqida', icon: <RiInfoCardLine size={20} />, link: "/sayt_haqida", title: "Sayt haqida" },
   ];
 
   return (
@@ -85,7 +86,7 @@ const App = () => {
             />
           )}
 
-          <Search placeholder="O'quvchilarni qidirish..." onSearch={null} enterButton className='md:w-1/2! ml-3' />
+          {/* <Search placeholder="O'quvchilarni qidirish..." onSearch={null} enterButton className='md:w-1/2! ml-3' /> */}
 
           <div className='flex items-center gap-3'>
             <Popconfirm

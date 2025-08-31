@@ -9,10 +9,13 @@ const API = axios.create({
 // Request interceptor: har bir requestga token qo‘shish
 API.interceptors.request.use(
     (req) => {
-        const token = localStorage.getItem("accessToken"); 
+        const token = localStorage.getItem("istudyAccessToken"); 
         if (token) {
             req.headers["Authorization"] = `Bearer ${token}`;
         }
+
+        // Har doim Content-Type JSON bo‘lsin
+        req.headers["Content-Type"] = "application/json";
         return req;
     },
     (error) => Promise.reject(error)
@@ -26,7 +29,7 @@ API.interceptors.response.use(
 
         if (status === 401) {
             // Token expired yoki noto‘g‘ri
-            localStorage.removeItem("accessToken");
+            localStorage.removeItem("istudyAccessToken");
             localStorage.removeItem("refreshToken");
             toast.error("Session expired. Keyinroq urinib kuring.");
             setTimeout(() => {

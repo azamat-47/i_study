@@ -1,7 +1,8 @@
 import React from "react";
 import { Form, Input, Button, Typography, message } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
+import toast from "react-hot-toast";
 
 const { Title } = Typography;
 
@@ -15,7 +16,6 @@ const Login = () => {
         // Agar backenddan token kelsa
         if (data?.accessToken) {
           try {
-            localStorage.setItem("token", JSON.stringify(data.accessToken));
             message.success("Muvaffaqiyatli kirdingiz!");
             navigate("/"); // Asosiy sahifaga yo'naltirish
           } catch (err) {
@@ -87,12 +87,7 @@ const Login = () => {
           </Form.Item>
         </Form>
 
-        <p className="text-center text-gray-500 text-sm">
-          Hisobingiz yo'qmi?{" "}
-          <Link to="/login/register" className="text-blue-500 hover:underline">
-            Ro'yxatdan o'ting
-          </Link>
-        </p>
+       
       </div>
     </div>
   );
