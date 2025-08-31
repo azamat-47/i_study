@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Table,  Button,   Modal,   Form,   Input,   Select,   DatePicker,   Card,   Statistic,   Tabs,   Space,   Popconfirm,   message,   Empty,  Spin, Alert,  Row,  Col} from 'antd';
-import {  PlusOutlined,  DeleteOutlined,  DollarOutlined,  CalendarOutlined,  UserOutlined,  BookOutlined,  ReloadOutlined,  ExclamationCircleOutlined} from '@ant-design/icons';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Table, Button, Modal, Form, Input, Select, DatePicker, Card, Statistic, Tabs, Space, Popconfirm, message, Empty, Spin, Alert, Row, Col, Tag } from 'antd';
+import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled } from '@ant-design/icons';
 import usePayment from '../../hooks/usePayment';
 import dayjs from 'dayjs';
 import PaymentAddModal from '../../components/payment-modal/PaymentAddModal';
@@ -14,58 +14,93 @@ const Payment = () => {
   const [selectedMonth, setSelectedMonth] = useState(dayjs().format('YYYY-MM'));
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [activeTab, setActiveTab] = useState('1');
+  const [openPopConfirmKey, setOpenPopConfirmKey] = useState(null);
 
   // usePayment hook'ini parametrlar bilan chaqirish
   const {
     fetchPayment,
     fetchPaymentByMonth,
     fetchAllUnpaid,
-    fetchCourseStudentsUnpaid,
+    postPaymentMutation,
     fetchFinancialSummary,
     deletePaymentMutation,
-    postPaymentMutation,
     refetchPaymentData,
     refetchExpenseData,
     isLoading,
     error
   } = usePayment(selectedMonth, selectedCourseId);
 
-  // Xatoliklarni ko'rsatish
-  useEffect(() => {
-    if (error) {
-      toast.error(`Ma'lumot yuklashda xatolik: ${error.message}`);
+
+  // Kurslar ro'yxati (PaymentAddModal uchun)
+  const courses = useMemo(() => {
+    const courseSet = new Set();
+    if (fetchPayment.data) {
+      fetchPayment.data.forEach(payment => {
+        if (payment.courseId && payment.courseName) {
+          courseSet.add(JSON.stringify({ id: payment.courseId, name: payment.courseName }));
+        }
+      });
     }
-  }, [error]);
+    return Array.from(courseSet).map(item => JSON.parse(item));
+  }, [fetchPayment.data]);
+
+
+  
+
+  // Xatoliklarni ko'rsatish (faqat bir marta ko'rsatish uchun)
+  const [errorShown, setErrorShown] = useState(false);
+  useEffect(() => {
+    if (error && !errorShown) {
+      toast.error(`Ma'lumot yuklashda xatolik: ${error.message}`);
+      setErrorShown(true);
+    }
+    if (!error) {
+      setErrorShown(false);
+    }
+  }, [error, errorShown]);
 
   // To'lovni o'chirish
-  const handleDeletePayment = async (id) => {
+  const handleDeletePayment = useCallback(async (id) => {
     try {
       await deletePaymentMutation.mutateAsync(id);
     } catch (error) {
       console.error('Delete error:', error);
     }
-  };
+  }, [deletePaymentMutation]);
 
   // Ma'lumotlarni qayta yuklash
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     refetchPaymentData();
     refetchExpenseData();
-    message.success("Ma'lumotlar yangilandi!");
-  };
+    toast.success("Ma'lumotlar yangilandi!");
+  }, [refetchPaymentData, refetchExpenseData]);
+
+  // To'lov qo'shish - Jadvaldan
+  const postStudentFromTable = useCallback(async (record) => {
+    try {
+      const payload = {
+        studentId: record.studentId,
+        courseId: record.courseId,
+        studentName: record.studentName,
+        courseName: record.courseName,
+        amount: record.courseFee,
+        paymentMonth: record.month,
+        paymentDate: dayjs().format('YYYY-MM-DD')
+      };
+
+      await postPaymentMutation.mutateAsync(payload);
+      setOpenPopConfirmKey(null);
+      toast.success("To'lov muvaffaqiyatli qo'shildi!");
+      
+    } catch (error) {
+      console.error('Post error:', error);
+      toast.error("To'lov qo'shishda xatolik yuz berdi");
+      setOpenPopConfirmKey(null);
+    }
+  }, [postPaymentMutation]);
 
   
-
-  // Mock courses - bu yerga haqiqiy kurslar datasi kelishi kerak
-  const courses = [
-    { id: 1, name: 'Frontend Development' },
-    { id: 2, name: 'Backend Development' },
-    { id: 3, name: 'Full Stack Development' },
-    { id: 4, name: 'Mobile Development' },
-    { id: 5, name: 'Data Science' }
-  ];
-
-  // Jadval ustunlari - To'lovlar
-  const paymentColumns = [
+  const paymentColumns = useMemo(() => [
     {
       title: 'Student',
       dataIndex: 'studentName',
@@ -74,7 +109,7 @@ const Payment = () => {
       render: (text) => (
         <div className="flex items-center gap-2">
           <UserOutlined className="text-blue-400" />
-          <span className="text-gray-200">{text}</span>
+          <span className="text-gray-200">{text || 'Noma\'lum'}</span>
         </div>
       ),
     },
@@ -86,7 +121,7 @@ const Payment = () => {
       render: (text) => (
         <div className="flex items-center gap-2">
           <BookOutlined className="text-green-400" />
-          <span className="text-gray-200">{text}</span>
+          <span className="text-gray-200">{text || 'Noma\'lum kurs'}</span>
         </div>
       ),
     },
@@ -94,10 +129,10 @@ const Payment = () => {
       title: 'Miqdor',
       dataIndex: 'amount',
       key: 'amount',
-      sorter: (a, b) => a.amount - b.amount,
+      sorter: (a, b) => (a.amount || 0) - (b.amount || 0),
       render: (amount) => (
         <span className="text-green-400 font-semibold">
-          {amount?.toLocaleString()} so'm
+          {typeof amount === 'number' ? amount.toLocaleString() : '0'} so'm
         </span>
       ),
     },
@@ -108,7 +143,7 @@ const Payment = () => {
       sorter: (a, b) => new Date(a.paymentMonth) - new Date(b.paymentMonth),
       render: (month) => (
         <span className="text-gray-300">
-          {dayjs(month).format('MMMM YYYY')}
+          {month ? dayjs(month).format('MMMM YYYY') : 'Noma\'lum'}
         </span>
       ),
     },
@@ -121,7 +156,7 @@ const Payment = () => {
         <div className="flex items-center gap-2">
           <CalendarOutlined className="text-yellow-400" />
           <span className="text-gray-200">
-            {dayjs(date).format('DD.MM.YYYY')}
+            {date ? dayjs(date).format('DD.MM.YYYY') : 'Noma\'lum'}
           </span>
         </div>
       ),
@@ -152,10 +187,10 @@ const Payment = () => {
         </Popconfirm>
       )
     }
-  ];
+  ], [handleDeletePayment, deletePaymentMutation.isLoading]);
 
   // Jadval ustunlari - To'lanmaganlar
-  const unpaidColumns = [
+  const unpaidColumns = useMemo(() => [
     {
       title: 'Student',
       dataIndex: 'studentName',
@@ -163,18 +198,18 @@ const Payment = () => {
       render: (text) => (
         <div className="flex items-center gap-2">
           <UserOutlined className="text-blue-400" />
-          <span className="text-gray-200">{text}</span>
+          <span className="text-gray-200">{text || 'Noma\'lum'}</span>
         </div>
       ),
     },
     {
       title: 'Kurs',
-      dataIndex: 'courseName', 
+      dataIndex: 'courseName',
       key: 'courseName',
       render: (text) => (
         <div className="flex items-center gap-2">
           <BookOutlined className="text-green-400" />
-          <span className="text-gray-200">{text}</span>
+          <span className="text-gray-200">{text || 'Noma\'lum kurs'}</span>
         </div>
       ),
     },
@@ -184,28 +219,65 @@ const Payment = () => {
       key: 'courseFee',
       render: (amount) => (
         <span className="text-red-400 font-semibold">
-          {amount?.toLocaleString()} so'm
+          {typeof amount === 'number' ? amount.toLocaleString() : '0'} so'm
         </span>
       ),
+    },
+    {
+      title: "Amallar",
+      key: "actions",
+      render: (_, record, index) => {
+        const uniqueKey = record.id || `${record.studentId}-${record.month}-${index}`;
+
+        return (
+          <Popconfirm
+            placement="top"
+            title={
+              <Card size="small" style={{ borderRadius: 12 }}>
+                <h3>Ma'lumotlarni qo'shishni xohlaysizmi?</h3>
+                <p><b>O'quvchi:</b> {record.studentName || 'Noma\'lum'}</p>
+                <p><b>Kurs nomi:</b> {record.courseName || 'Noma\'lum kurs'}</p>
+                <p><b>Oy:</b> <i className="font-bold">{record.month || 'Noma\'lum'}</i> uchun</p>
+                <p><b>To'lov:</b> {typeof record.courseFee === 'number' ? record.courseFee.toLocaleString() : '0'} so'm</p>
+              </Card>
+            }
+            okText="Ha, qo'sh"
+            cancelText="Bekor qilish"
+            open={openPopConfirmKey === uniqueKey}
+            onConfirm={() => postStudentFromTable(record)}
+            onCancel={() => setOpenPopConfirmKey(null)}
+            onOpenChange={(visible) => setOpenPopConfirmKey(visible ? uniqueKey : null)}
+            icon={<FileAddFilled style={{ color: "green" }} />}
+            okButtonProps={{
+              loading: postPaymentMutation.isLoading && openPopConfirmKey === uniqueKey
+            }}
+          >
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              loading={postPaymentMutation.isLoading && openPopConfirmKey === uniqueKey}
+            >
+              To'lov Qo'shish
+            </Button>
+          </Popconfirm>
+        );
+      }
     }
-  ];
+  ], [postStudentFromTable, postPaymentMutation.isLoading, openPopConfirmKey]);
+
 
   // Moliyaviy statistikalar
   const renderFinancialSummary = () => {
     if (!fetchFinancialSummary.data) return null;
 
     const { totalIncome, totalExpenses, netProfit } = fetchFinancialSummary.data;
-    const unpaidAmount = fetchAllUnpaid.data?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
-
-    console.log(fetchFinancialSummary.data);
-    
 
     return (
       <Row gutter={[16, 16]} className="mb-8">
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8}>
           <Card className="border-gray-700 bg-gradient-to-r from-green-900 to-green-800">
             <Statistic
-              title={<span className="text-gray-300">Jami Daromad</span>}
+              title={<span className="text-gray-300">Jami <Tag>Oylik</Tag>Daromad</span>}
               value={totalIncome || 0}
               suffix="so'm"
               valueStyle={{ color: '#10b981' }}
@@ -213,10 +285,10 @@ const Payment = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8}>
           <Card className="border-gray-700 bg-gradient-to-r from-red-900 to-red-800">
             <Statistic
-              title={<span className="text-gray-300">Jami Xarajat</span>}
+              title={<span className="text-gray-300">Jami <Tag>Oylik</Tag>Xarajat</span>}
               value={totalExpenses || 0}
               suffix="so'm"
               valueStyle={{ color: '#ef4444' }}
@@ -224,25 +296,14 @@ const Payment = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={6}>
+        <Col xs={24} sm={12} md={8}>
           <Card className="border-gray-700 bg-gradient-to-r from-blue-900 to-blue-800">
             <Statistic
-              title={<span className="text-gray-300">Sof Foyda</span>}
+              title={<span className="text-gray-300">Sof <Tag>Oylik</Tag>Foyda</span>}
               value={netProfit || 0}
               suffix="so'm"
               valueStyle={{ color: netProfit >= 0 ? '#10b981' : '#ef4444' }}
               prefix={<DollarOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card className="border-gray-700 bg-gradient-to-r from-yellow-900 to-yellow-800">
-            <Statistic
-              title={<span className="text-gray-300">To'lanmagan</span>}
-              value={unpaidAmount}
-              suffix="so'm"
-              valueStyle={{ color: '#f59e0b' }}
-              prefix={<CalendarOutlined />}
             />
           </Card>
         </Col>
@@ -262,10 +323,11 @@ const Payment = () => {
               <h3 className="text-lg font-medium text-gray-200">
                 Barcha To'lovlar ({fetchPayment.data?.length || 0})
               </h3>
-              <Button 
-                icon={<ReloadOutlined />} 
+              <Button
+                icon={<ReloadOutlined />}
                 onClick={handleRefresh}
                 className="text-gray-300"
+                loading={fetchPayment.isLoading}
               >
                 Yangilash
               </Button>
@@ -274,13 +336,13 @@ const Payment = () => {
               columns={paymentColumns}
               dataSource={fetchPayment.data || []}
               loading={fetchPayment.isLoading}
-              rowKey="id"
+              rowKey={(record) => record.id || `payment-${Math.random()}`}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
                 showQuickJumper: true,
-                showTotal: (total, range) => 
-                  `${range[0]}-${range[1]} of ${total} ta tolov bajarildi`,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} ta to'lov bajarildi`,
               }}
               className="custom-dark-table"
               locale={{
@@ -302,13 +364,14 @@ const Payment = () => {
           <Card className="border-gray-700">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium text-gray-200">
-                {dayjs(selectedMonth).format('MMMM YYYY')} oyi uchun to'lovlar 
-                ({fetchPaymentByMonth.data?.payments.length || 0})
+                {dayjs(selectedMonth).format('MMMM YYYY')} oyi uchun to'lovlar
+                ({fetchPaymentByMonth.data?.payments?.length || 0})
               </h3>
-              <Button 
-                icon={<ReloadOutlined />} 
+              <Button
+                icon={<ReloadOutlined />}
                 onClick={handleRefresh}
                 className="text-gray-300"
+                loading={fetchPaymentByMonth.isLoading}
               >
                 Yangilash
               </Button>
@@ -317,13 +380,13 @@ const Payment = () => {
               columns={paymentColumns}
               dataSource={fetchPaymentByMonth.data?.payments || []}
               loading={fetchPaymentByMonth.isLoading}
-              rowKey="id"
+              rowKey={(record) => record.id || `monthly-${Math.random()}`}
               pagination={{
                 pageSize: 10,
                 showSizeChanger: true,
                 showQuickJumper: true,
-                showTotal: (total, range) => 
-                  `${range[0]}-${range[1]} of ${total} ta uquvchi to'lov qilgan`,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} ta o'quvchi to'lov qilgan`,
               }}
               className="custom-dark-table"
               locale={{
@@ -343,40 +406,14 @@ const Payment = () => {
         label: <span className="text-gray-200">To'lanmagan</span>,
         children: (
           <div className="space-y-6">
-            {/* Course Selection */}
-            <Card className="border-gray-700">
-              <div className="flex gap-4 items-center flex-wrap">
-                <span className="text-gray-200">Kurs tanlang:</span>
-                <Select
-                  placeholder="Kursni tanlang"
-                  style={{ width: 300 }}
-                  onChange={setSelectedCourseId}
-                  value={selectedCourseId}
-                  className="dark-select"
-                  allowClear
-                >
-                  {courses.map(course => (
-                    <Option key={course.id} value={course.id}>
-                      {course.name}
-                    </Option>
-                  ))}
-                </Select>
-                <Button 
-                  icon={<ReloadOutlined />} 
-                  onClick={handleRefresh}
-                  className="text-gray-300"
-                >
-                  Yangilash
-                </Button>
-              </div>
-            </Card>
+            
 
             {/* All Unpaid */}
-            <Card 
-              className="border-gray-700" 
+            <Card
+              className="border-gray-700"
               title={
                 <span className="text-gray-200">
-                  Barcha To'lanmaganlar ({fetchAllUnpaid.data?.length || 0})
+                  <i><b>{dayjs(selectedMonth).format('MMMM YYYY')}</b></i> To'lanmaganlar ({fetchAllUnpaid.data?.length || 0})
                 </span>
               }
             >
@@ -384,11 +421,11 @@ const Payment = () => {
                 columns={unpaidColumns}
                 dataSource={fetchAllUnpaid.data || []}
                 loading={fetchAllUnpaid.isLoading}
-                rowKey={(record, index) => record.id || index}
-                pagination={{ 
-                  pageSize: 5,
-                  showTotal: (total, range) => 
-                    `${range[0]}-${range[1]} of ${total} ta tolov qilinmagan`,
+                rowKey={(record, index) => record.id || `unpaid-all-${index}`}
+                pagination={{
+                  pageSize: 10,
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} of ${total} ta to'lov qilinmagan`,
                 }}
                 className="custom-dark-table"
                 locale={{
@@ -402,51 +439,32 @@ const Payment = () => {
               />
             </Card>
 
-            {/* Course Unpaid Students */}
-            {selectedCourseId && (
-              <Card 
-                className="border-gray-700" 
-                title={
-                  <span className="text-gray-200">
-                    {courses.find(c => c.id === selectedCourseId)?.name} 
-                    kursi bo'yicha to'lanmaganlar ({fetchCourseStudentsUnpaid.data?.length || 0})
-                  </span>
-                }
-              >
-                <Table
-                  columns={unpaidColumns}
-                  dataSource={fetchCourseStudentsUnpaid.data || []}
-                  loading={fetchCourseStudentsUnpaid.isLoading}
-                  rowKey={(record, index) => record.id || index}
-                  pagination={{ 
-                    pageSize: 5,
-                    showTotal: (total, range) => 
-                      `${range[0]}-${range[1]} of ${total} ta uquvchi ${dayjs(selectedMonth).format('MMMM YYYY')} uchun to'lov qilmagan`,
-                  }}
-                  className="custom-dark-table"
-                  locale={{
-                    emptyText: (
-                      <Empty
-                        description={
-                          <span className="text-gray-400">
-                            Bu kurs uchun to'lanmagan talabalar yo'q
-                          </span>
-                        }
-                      />
-                    )
-                  }}
-                  scroll={{ x: 600 }}
-                />
-              </Card>
-            )}
+           
           </div>
         ),
       },
+      // Payment
+      {
+        key: '4',
+        label: <span className="text-gray-200">To'lov Qo'shish</span>,
+        children: (
+          <Card className="border-gray-700">
+            <h3 className="text-lg font-medium text-gray-200 mb-4">Yangi To'lov Qo'shish</h3>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="bg-blue-600 hover:bg-blue-500"
+            >
+              Yangi To'lov
+            </Button>
+          </Card>
+        ),
+      }
     ];
 
     return (
-      <Tabs 
-        items={tabItems} 
+      <Tabs
+        items={tabItems}
         className="custom-dark-tabs"
         activeKey={activeTab}
         onChange={setActiveTab}
@@ -455,7 +473,7 @@ const Payment = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 ">
+    <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
@@ -473,7 +491,6 @@ const Payment = () => {
               icon={<PlusOutlined />}
               onClick={() => setIsModalVisible(true)}
               className="bg-blue-600 hover:bg-blue-500"
-              loading={postPaymentMutation.isLoading}
             >
               Yangi To'lov
             </Button>
@@ -488,6 +505,7 @@ const Payment = () => {
             type="error"
             showIcon
             className="mb-6"
+            closable
           />
         )}
 

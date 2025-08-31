@@ -34,6 +34,8 @@ const UpdateCourseModal = ({ visible, onClose, course }) => {
       teachers: selectedTeacher ? [selectedTeacher] : [],
     };
     putCourseMutation.mutate(payload, { onSuccess: onClose });
+
+    form.resetFields();
   };
 
   return (

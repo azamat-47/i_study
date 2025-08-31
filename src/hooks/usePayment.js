@@ -29,14 +29,6 @@ const Get_Payment_All_Unpaid = async ({ queryKey }) => {
     return response.data;
 }
 
-const Get_Course_Students_Unpaid = async ({ queryKey }) => {
-    const [_key, courseId, month] = queryKey;
-    if (!courseId) throw new Error("Kurs Id talab qilinadi!");
-    if (!month) throw new Error("Oy talab qilinadi!");
-    const response = await API.get(`/api/admin/payments/unpaid/${courseId}`, { params: { month } });
-    return response.data;
-}
-
 const Delete_Payment = async (id) => {
     if (!id) throw new Error("Id talab qilinadi!");
     const response = await API.delete(`/payments/${id}`);
@@ -62,6 +54,15 @@ const Post_Expense = async (payload) => {
     const response = await API.post("/api/admin/expenses", payload);
     return response.data;
 }
+
+const Post_Expense_Teacher_Salary_Full = async (payload) => {
+    if (!payload.teacherId || !payload.month ) {
+        throw new Error("Maydonlarni to'ldirish talab qilinadi!");
+    }
+    const response = await API.post("/api/admin/pay-teachers-salary", payload);
+    return response.data;
+}
+
 
 const Delete_Expense = async (id) => {
     if (!id) throw new Error("Id talab qilinadi!");
@@ -102,13 +103,7 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         staleTime: 5 * 60 * 1000,
     });
 
-    // Kurs bo'yicha to'lanmaganlar
-    const fetchCourseStudentsUnpaid = useQuery({
-        queryKey: ["course-students-unpaid", selectedCourseId, selectedMonth],
-        queryFn: Get_Course_Students_Unpaid,
-        enabled: !!(selectedCourseId && selectedMonth),
-        staleTime: 5 * 60 * 1000,
-    });
+    
 
     // Xarajatlar
     const fetchExpenses = useQuery({
@@ -141,7 +136,6 @@ const usePayment = (selectedMonth, selectedCourseId) => {
             queryClient.invalidateQueries({ queryKey: ["payments"] });
             queryClient.invalidateQueries({ queryKey: ["payments-by-month"] });
             queryClient.invalidateQueries({ queryKey: ["all-unpaid"] });
-            queryClient.invalidateQueries({ queryKey: ["course-students-unpaid"] });
             queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
             toast.success("To'lov muvaffaqiyatli qo'shildi!");
         },
@@ -158,7 +152,6 @@ const usePayment = (selectedMonth, selectedCourseId) => {
             queryClient.invalidateQueries({ queryKey: ["payments"] });
             queryClient.invalidateQueries({ queryKey: ["payments-by-month"] });
             queryClient.invalidateQueries({ queryKey: ["all-unpaid"] });
-            queryClient.invalidateQueries({ queryKey: ["course-students-unpaid"] });
             queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
             toast.success("To'lov muvaffaqiyatli o'chirildi!");
         },
@@ -181,6 +174,20 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         }
     });
 
+    // Xarajat o'qituvchi maoshini to'lash mutation
+    const postTeacherSalaryExpenseMutation = useMutation({
+        mutationFn: Post_Expense_Teacher_Salary_Full,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["expenses"] });
+            queryClient.invalidateQueries({ queryKey: ["expenses-by-month"] });
+            queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+            toast.success("O'qituvchi maoshi muvaffaqiyatli to'landi!");
+        },
+        onError: (error) => {
+            toast.error(error.message || "O'qituvchi maoshini to'lashda xatolik yuz berdi!");
+        }
+    });
+
     // Xarajat o'chirish mutation
     const deleteExpenseMutation = useMutation({
         mutationFn: Delete_Expense,
@@ -200,7 +207,6 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         queryClient.invalidateQueries({ queryKey: ["payments"] });
         queryClient.invalidateQueries({ queryKey: ["payments-by-month"] });
         queryClient.invalidateQueries({ queryKey: ["all-unpaid"] });
-        queryClient.invalidateQueries({ queryKey: ["course-students-unpaid"] });
         queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
     };
 
@@ -215,7 +221,6 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         fetchPayment,
         fetchPaymentByMonth,
         fetchAllUnpaid,
-        fetchCourseStudentsUnpaid,
         fetchExpenses,
         fetchExpensesByMonth,
         fetchFinancialSummary,
@@ -225,6 +230,7 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         deletePaymentMutation,
         postExpenseMutation,
         deleteExpenseMutation,
+        postTeacherSalaryExpenseMutation,
         
         // Utility functions
         refetchPaymentData,
@@ -234,7 +240,6 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         isLoading: fetchPayment.isLoading || 
                   fetchPaymentByMonth.isLoading || 
                   fetchAllUnpaid.isLoading || 
-                  fetchCourseStudentsUnpaid.isLoading ||
                   fetchExpenses.isLoading ||
                   fetchExpensesByMonth.isLoading ||
                   fetchFinancialSummary.isLoading,
@@ -243,7 +248,6 @@ const usePayment = (selectedMonth, selectedCourseId) => {
         error: fetchPayment.error || 
                fetchPaymentByMonth.error || 
                fetchAllUnpaid.error || 
-               fetchCourseStudentsUnpaid.error ||
                fetchExpenses.error ||
                fetchExpensesByMonth.error ||
                fetchFinancialSummary.error
