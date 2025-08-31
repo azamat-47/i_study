@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Table, Button, Modal, Form, Input, Select, DatePicker, Card, Statistic, Tabs, Space, Popconfirm, message, Empty, Spin, Alert, Row, Col, Tag } from 'antd';
-import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled, ShoppingOutlined, BankOutlined } from '@ant-design/icons';
 import usePayment from '../../hooks/usePayment';
 import dayjs from 'dayjs';
 import PaymentAddModal from '../../components/payment-modal/PaymentAddModal';
@@ -11,25 +11,31 @@ const { TabPane } = Tabs;
 
 const Payment = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(dayjs().format('YYYY-MM'));
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [activeTab, setActiveTab] = useState('1');
   const [openPopConfirmKey, setOpenPopConfirmKey] = useState(null);
+  const [expenseForm] = Form.useForm();
 
   // usePayment hook'ini parametrlar bilan chaqirish
   const {
     fetchPayment,
     fetchPaymentByMonth,
     fetchAllUnpaid,
+    fetchExpenses,
+    fetchExpensesByMonth,
     postPaymentMutation,
     fetchFinancialSummary,
     deletePaymentMutation,
+    postExpenseMutation,
+    deleteExpenseMutation,
+    postTeacherSalaryExpenseMutation,
     refetchPaymentData,
     refetchExpenseData,
     isLoading,
     error
   } = usePayment(selectedMonth, selectedCourseId);
-
 
   // Kurslar ro'yxati (PaymentAddModal uchun)
   const courses = useMemo(() => {
@@ -43,9 +49,6 @@ const Payment = () => {
     }
     return Array.from(courseSet).map(item => JSON.parse(item));
   }, [fetchPayment.data]);
-
-
-  
 
   // Xatoliklarni ko'rsatish (faqat bir marta ko'rsatish uchun)
   const [errorShown, setErrorShown] = useState(false);
@@ -67,6 +70,15 @@ const Payment = () => {
       console.error('Delete error:', error);
     }
   }, [deletePaymentMutation]);
+
+  // Xarajatni o'chirish
+  const handleDeleteExpense = useCallback(async (id) => {
+    try {
+      await deleteExpenseMutation.mutateAsync(id);
+    } catch (error) {
+      console.error('Delete expense error:', error);
+    }
+  }, [deleteExpenseMutation]);
 
   // Ma'lumotlarni qayta yuklash
   const handleRefresh = useCallback(() => {
@@ -94,12 +106,47 @@ const Payment = () => {
       
     } catch (error) {
       console.error('Post error:', error);
-      toast.error("To'lov qo'shishda xatolik yuz berdi");
       setOpenPopConfirmKey(null);
     }
   }, [postPaymentMutation]);
 
-  
+  // Xarajat qo'shish
+  const handleAddExpense = useCallback(async (values) => {
+    try {
+      const payload = {
+        name: values.name,
+        amount: parseFloat(values.amount),
+        expenseDate: values.expenseDate.format('YYYY-MM-DD'),
+        expenseMonth: values.expenseDate.format('YYYY-MM'),
+        description: values.description || ''
+      };
+
+      await postExpenseMutation.mutateAsync(payload);
+      setIsExpenseModalVisible(false);
+      expenseForm.resetFields();
+      toast.success("Xarajat muvaffaqiyatli qo'shildi!");
+    } catch (error) {
+      console.error('Add expense error:', error);
+      toast.error("Xarajat qo'shishda xatolik yuz berdi");
+    }
+  }, [postExpenseMutation, expenseForm]);
+
+  // O'qituvchi maoshini to'lash
+  const handlePayTeacherSalary = useCallback(async (teacherId, teacherName) => {
+    try {
+      const payload = {
+        teacherId: teacherId,
+        month: selectedMonth
+      };
+
+      await postTeacherSalaryExpenseMutation.mutateAsync(payload);
+      toast.success(`${teacherName} ning maoshi muvaffaqiyatli to'landi!`);
+    } catch (error) {
+      console.error('Pay teacher salary error:', error);
+      toast.error("O'qituvchi maoshini to'lashda xatolik yuz berdi");
+    }
+  }, [postTeacherSalaryExpenseMutation, selectedMonth]);
+
   const paymentColumns = useMemo(() => [
     {
       title: 'Student',
@@ -189,6 +236,99 @@ const Payment = () => {
     }
   ], [handleDeletePayment, deletePaymentMutation.isLoading]);
 
+  // Xarajatlar jadvali ustunlari
+  const expenseColumns = useMemo(() => [
+    {
+      title: 'Nomi',
+      dataIndex: 'name',
+      key: 'name',
+      sorter: (a, b) => a.name?.localeCompare(b.name),
+      render: (text, record) => (
+        <div className="flex items-center gap-2">
+          {record.type === 'teacher_salary' ? (
+            <BankOutlined className="text-purple-400" />
+          ) : (
+            <ShoppingOutlined className="text-orange-400" />
+          )}
+          <span className="text-gray-200">{text || 'Noma\'lum'}</span>
+          {record.type === 'teacher_salary' && (
+            <Tag color="purple" size="small">Maosh</Tag>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: 'Miqdor',
+      dataIndex: 'amount',
+      key: 'amount',
+      sorter: (a, b) => (a.amount || 0) - (b.amount || 0),
+      render: (amount) => (
+        <span className="text-red-400 font-semibold">
+          -{typeof amount === 'number' ? amount.toLocaleString() : '0'} so'm
+        </span>
+      ),
+    },
+    {
+      title: 'Tavsif',
+      dataIndex: 'description',
+      key: 'description',
+      render: (text) => (
+        <span className="text-gray-300">{text || 'Tavsif yo\'q'}</span>
+      ),
+    },
+    {
+      title: 'Xarajat oyi',
+      dataIndex: 'expenseMonth',
+      key: 'expenseMonth',
+      sorter: (a, b) => new Date(a.expenseMonth) - new Date(b.expenseMonth),
+      render: (month) => (
+        <span className="text-gray-300">
+          {month ? dayjs(month).format('MMMM YYYY') : 'Noma\'lum'}
+        </span>
+      ),
+    },
+    {
+      title: 'Sana',
+      dataIndex: 'expenseDate',
+      key: 'expenseDate',
+      sorter: (a, b) => new Date(a.expenseDate) - new Date(b.expenseDate),
+      render: (date) => (
+        <div className="flex items-center gap-2">
+          <CalendarOutlined className="text-yellow-400" />
+          <span className="text-gray-200">
+            {date ? dayjs(date).format('DD.MM.YYYY') : 'Noma\'lum'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      title: 'Amallar',
+      key: 'actions',
+      width: 120,
+      render: (_, record) => (
+        <Popconfirm
+          title="Xarajatni o'chirish"
+          description="Haqiqatan ham bu xarajatni o'chirmoqchimisiz?"
+          onConfirm={() => handleDeleteExpense(record.id)}
+          okText="Ha"
+          cancelText="Yo'q"
+          placement="topRight"
+          icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+        >
+          <Button
+            type="primary"
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            loading={deleteExpenseMutation.isLoading}
+          >
+            O'chirish
+          </Button>
+        </Popconfirm>
+      )
+    }
+  ], [handleDeleteExpense, deleteExpenseMutation.isLoading]);
+
   // Jadval ustunlari - To'lanmaganlar
   const unpaidColumns = useMemo(() => [
     {
@@ -264,7 +404,6 @@ const Payment = () => {
       }
     }
   ], [postStudentFromTable, postPaymentMutation.isLoading, openPopConfirmKey]);
-
 
   // Moliyaviy statistikalar
   const renderFinancialSummary = () => {
@@ -406,8 +545,6 @@ const Payment = () => {
         label: <span className="text-gray-200">To'lanmagan</span>,
         children: (
           <div className="space-y-6">
-            
-
             {/* All Unpaid */}
             <Card
               className="border-gray-700"
@@ -438,26 +575,96 @@ const Payment = () => {
                 scroll={{ x: 600 }}
               />
             </Card>
-
-           
           </div>
         ),
       },
-      // Payment
+      // Expenses Tab
       {
         key: '4',
-        label: <span className="text-gray-200">To'lov Qo'shish</span>,
+        label: <span className="text-gray-200">Xarajatlar</span>,
         children: (
-          <Card className="border-gray-700">
-            <h3 className="text-lg font-medium text-gray-200 mb-4">Yangi To'lov Qo'shish</h3>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              className="bg-blue-600 hover:bg-blue-500"
-            >
-              Yangi To'lov
-            </Button>
-          </Card>
+          <div className="space-y-6">
+            {/* Barcha Xarajatlar */}
+            <Card className="border-gray-700">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-200">
+                  Barcha Xarajatlar ({fetchExpenses.data?.length || 0})
+                </h3>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => setIsExpenseModalVisible(true)}
+                    className="bg-red-600 hover:bg-red-500"
+                  >
+                    Yangi Xarajat
+                  </Button>
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={handleRefresh}
+                    className="text-gray-300"
+                    loading={fetchExpenses.isLoading}
+                  >
+                    Yangilash
+                  </Button>
+                </Space>
+              </div>
+              <Table
+                columns={expenseColumns}
+                dataSource={fetchExpenses.data || []}
+                loading={fetchExpenses.isLoading}
+                rowKey={(record) => record.id || `expense-${Math.random()}`}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} of ${total} ta xarajat`,
+                }}
+                className="custom-dark-table"
+                locale={{
+                  emptyText: (
+                    <Empty
+                      description={<span className="text-gray-400">Hech qanday xarajat topilmadi</span>}
+                    />
+                  )
+                }}
+                scroll={{ x: 800 }}
+              />
+            </Card>
+
+            {/* Oylik Xarajatlar */}
+            <Card className="border-gray-700">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-200">
+                  {dayjs(selectedMonth).format('MMMM YYYY')} oyi uchun xarajatlar
+                  ({fetchExpensesByMonth.data?.length || 0})
+                </h3>
+              </div>
+              <Table
+                columns={expenseColumns}
+                dataSource={fetchExpensesByMonth.data || []}
+                loading={fetchExpensesByMonth.isLoading}
+                rowKey={(record) => record.id || `monthly-expense-${Math.random()}`}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} of ${total} ta oylik xarajat`,
+                }}
+                className="custom-dark-table"
+                locale={{
+                  emptyText: (
+                    <Empty
+                      description={<span className="text-gray-400">Bu oy uchun xarajat topilmadi</span>}
+                    />
+                  )
+                }}
+                scroll={{ x: 800 }}
+              />
+            </Card>
+          </div>
         ),
       }
     ];
@@ -524,6 +731,102 @@ const Payment = () => {
           onClose={() => setIsModalVisible(false)}
           courses={courses}
         />
+
+        {/* Expense Add Modal */}
+        <Modal
+          title={<span className="text-gray-200">Yangi Xarajat Qo'shish</span>}
+          open={isExpenseModalVisible}
+          onCancel={() => {
+            setIsExpenseModalVisible(false);
+            expenseForm.resetFields();
+          }}
+          footer={null}
+          className="dark-modal"
+        >
+          <Form
+            form={expenseForm}
+            layout="vertical"
+            onFinish={handleAddExpense}
+            className="space-y-4"
+          >
+            <Form.Item
+              name="name"
+              label={<span className="text-gray-200">Xarajat nomi</span>}
+              rules={[
+                { required: true, message: 'Xarajat nomini kiriting!' }
+              ]}
+            >
+              <Input
+                placeholder="Xarajat nomini kiriting"
+                className="dark-input"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="amount"
+              label={<span className="text-gray-200">Miqdor (so'm)</span>}
+              rules={[
+                { required: true, message: 'Xarajat miqdorini kiriting!' },
+                { 
+                  type: 'number',
+                  min: 0,
+                  message: 'Miqdor 0 dan katta bo\'lishi kerak!',
+                  transform: (value) => value ? Number(value) : value
+                }
+              ]}
+            >
+              <Input
+                type="number"
+                placeholder="Xarajat miqdorini kiriting"
+                className="dark-input"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="expenseDate"
+              label={<span className="text-gray-200">Xarajat sanasi</span>}
+              rules={[
+                { required: true, message: 'Xarajat sanasini tanlang!' }
+              ]}
+            >
+              <DatePicker
+                className="dark-datepicker w-full"
+                placeholder="Sanani tanlang"
+                format="DD.MM.YYYY"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="description"
+              label={<span className="text-gray-200">Tavsif</span>}
+            >
+              <Input.TextArea
+                placeholder="Xarajat haqida qo'shimcha ma'lumot"
+                className="dark-input"
+                rows={3}
+              />
+            </Form.Item>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                onClick={() => {
+                  setIsExpenseModalVisible(false);
+                  expenseForm.resetFields();
+                }}
+              >
+                Bekor qilish
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={postExpenseMutation.isLoading}
+                className="bg-red-600 hover:bg-red-500"
+              >
+                Xarajat Qo'shish
+              </Button>
+            </div>
+          </Form>
+        </Modal>
       </div>
     </div>
   );
