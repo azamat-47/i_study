@@ -8,8 +8,7 @@ import toast from 'react-hot-toast';
 import ExpensesAddModal from '../../components/payment-modal/ExpensesAddModal';
 import ExpensesTeachersModal from '../../components/payment-modal/ExpensesTeachersModal';
 
-const { Option } = Select;
-const { TabPane } = Tabs;
+
 
 const Payment = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -20,7 +19,10 @@ const Payment = () => {
   const [openPopConfirmKey, setOpenPopConfirmKey] = useState(null);
   const [openAddTeacherExpenses, setOenAddTeacherExpenses] = useState(false);
 
-  // usePayment hook'ini parametrlar bilan chaqirish
+
+
+
+
   const {
     fetchPayment,
     fetchPaymentByMonth,
@@ -38,6 +40,8 @@ const Payment = () => {
     error
   } = usePayment(selectedMonth, selectedCourseId);
 
+
+
   // Kurslar ro'yxati (PaymentAddModal uchun)
   const courses = useMemo(() => {
     const courseSet = new Set();
@@ -51,6 +55,9 @@ const Payment = () => {
     return Array.from(courseSet).map(item => JSON.parse(item));
   }, [fetchPayment.data]);
 
+
+
+
   // Xatoliklarni ko'rsatish (faqat bir marta ko'rsatish uchun)
   const [errorShown, setErrorShown] = useState(false);
   useEffect(() => {
@@ -62,6 +69,8 @@ const Payment = () => {
       setErrorShown(false);
     }
   }, [error, errorShown]);
+
+
 
   // To'lovni o'chirish
   const handleDeletePayment = useCallback(async (id) => {
@@ -87,6 +96,8 @@ const Payment = () => {
     refetchExpenseData();
     toast.success("Ma'lumotlar yangilandi!");
   }, [refetchPaymentData, refetchExpenseData]);
+
+
 
   // To'lov qo'shish - Jadvaldan
   const postStudentFromTable = useCallback(async (record) => {
@@ -387,6 +398,8 @@ const Payment = () => {
     }
   ], [postStudentFromTable, postPaymentMutation.isLoading, openPopConfirmKey]);
 
+
+  
   // Moliyaviy statistikalar
   const renderFinancialSummary = () => {
     if (!fetchFinancialSummary.data) return null;
