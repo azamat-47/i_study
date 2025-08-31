@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Button, Table, Space, Popconfirm, Input } from "antd";
+import { Button, Table, Space, Popconfirm, Input, Tag } from "antd";
+import { DollarOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+
 import useTeacher from "../../hooks/useTeacher";
 import ModalTeachers from "../../components/teacher-modal/ModalTeachers";
 import ModalTeaEdit from "../../components/teacher-modal/ModalTeaEdit";
-import { DollarOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Tag } from "antd";
 
 const TeachersPage = () => {
     const { getTeachers, deleteTeacherMutation } = useTeacher();
@@ -37,7 +38,20 @@ const TeachersPage = () => {
         { title: "Ism", dataIndex: "name", key: "name" },
         { title: "Email", dataIndex: "email", key: "email" },
         { title: "Telefon", dataIndex: "phone", key: "phone" },
-        { title: "Kurslari", dataIndex: "courses", key: "courses" },
+        { 
+            title: "Kurslari", 
+            dataIndex: "courses", 
+            key: "courses",
+            render: (courses, record) => (
+                <Space>
+                    {courses.split(', ').map((course, index) => (
+                        <Link key={index} to={`/courses/${record.key}`}>
+                            <Tag color="blue">{course}</Tag>
+                        </Link>
+                    ))}
+                </Space>
+            )
+        },
         
         {
             title: "Maosh", dataIndex: "salary", key: "salary",
