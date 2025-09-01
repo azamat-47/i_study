@@ -96,6 +96,11 @@ const Get_Financial_Summary = async ({ queryKey }) => {
   return response.data;
 };
 
+const Get_Full_Financial_Summary = async () => {
+  const response = await API.get("/api/admin/all-financial-summary");
+  return response.data;
+};
+
 const usePayment = (selectedMonth) => {
   const queryClient = useQueryClient();
 
@@ -145,6 +150,13 @@ const usePayment = (selectedMonth) => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // To'liq moliyaviy xulosalar
+  const fetchFullFinancialSummary = useQuery({
+    queryKey: ["full-financial-summary"],
+    queryFn: Get_Full_Financial_Summary,
+    staleTime: 5 * 60 * 1000,
+  });
+
   // To'lov qo'shish
   const postPaymentMutation = useMutation({
     mutationFn: Post_Payment,
@@ -156,6 +168,7 @@ const usePayment = (selectedMonth) => {
       queryClient.invalidateQueries({ queryKey: ["payments-by-month"] });
       queryClient.invalidateQueries({ queryKey: ["all-unpaid"] });
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
       toast.success("To'lov muvaffaqiyatli qo'shildi!", { id: "postPayment" });
     },
     onError: (error) => {
@@ -179,6 +192,7 @@ const usePayment = (selectedMonth) => {
       queryClient.invalidateQueries({ queryKey: ["payments-by-month"] });
       queryClient.invalidateQueries({ queryKey: ["all-unpaid"] });
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
       toast.success("To'lov muvaffaqiyatli o'chirildi!", {
         id: "deletePayment",
       });
@@ -201,6 +215,7 @@ const usePayment = (selectedMonth) => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["expenses-by-month"] });
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
       toast.success("Xarajat muvaffaqiyatli qo'shildi!", {
         id: "postExpense",
       });
@@ -225,6 +240,7 @@ const usePayment = (selectedMonth) => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["expenses-by-month"] });
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
       toast.success("O'qituvchi maoshi muvaffaqiyatli to'landi!", {
         id: "teacherSalary",
       });
@@ -247,6 +263,8 @@ const usePayment = (selectedMonth) => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["expenses-by-month"] });
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
+
       toast.success("Xarajat muvaffaqiyatli o'chirildi!", {
         id: "deleteExpense",
       });
@@ -265,12 +283,15 @@ const usePayment = (selectedMonth) => {
     queryClient.invalidateQueries({ queryKey: ["payments-by-month"] });
     queryClient.invalidateQueries({ queryKey: ["all-unpaid"] });
     queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+    queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
+
   };
 
   const refetchExpenseData = () => {
     queryClient.invalidateQueries({ queryKey: ["expenses"] });
     queryClient.invalidateQueries({ queryKey: ["expenses-by-month"] });
     queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
+    queryClient.invalidateQueries({ queryKey: ["full-financial-summary"] });
   };
 
   return {
@@ -281,6 +302,7 @@ const usePayment = (selectedMonth) => {
     fetchExpenses,
     fetchExpensesByMonth,
     fetchFinancialSummary,
+    fetchFullFinancialSummary,
 
     // Mutations
     postPaymentMutation,
@@ -300,14 +322,16 @@ const usePayment = (selectedMonth) => {
       fetchAllUnpaid.isLoading ||
       fetchExpenses.isLoading ||
       fetchExpensesByMonth.isLoading ||
-      fetchFinancialSummary.isLoading,
+      fetchFinancialSummary.isLoading ||
+      fetchFullFinancialSummary.isLoading,
     error:
       fetchPayment.error ||
       fetchPaymentByMonth.error ||
       fetchAllUnpaid.error ||
       fetchExpenses.error ||
       fetchExpensesByMonth.error ||
-      fetchFinancialSummary.error,
+      fetchFinancialSummary.error ||
+      fetchFullFinancialSummary.error,
   };
 };
 

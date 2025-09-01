@@ -37,7 +37,7 @@ const ModalTeaEdit = ({ visible, onClose, teacher }) => {
     }
 
     console.log("Update Payload:", payload);
-    updateTeacherMutation.mutate(payload, { onSuccess: onClose });
+    updateTeacherMutation.mutate(payload, { onSuccess: () => {onClose(), form.resetFields() } });
   };
 
   return (

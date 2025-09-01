@@ -33,7 +33,7 @@ const UpdateCourseModal = ({ visible, onClose, course }) => {
       fee: values.fee,
       teachers: selectedTeacher ? [selectedTeacher] : [],
     };
-    putCourseMutation.mutate(payload, { onSuccess: onClose });
+    putCourseMutation.mutate(payload, { onSuccess: () => {onClose(), form.resetFields() } });
 
     form.resetFields();
   };
