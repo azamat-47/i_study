@@ -11,9 +11,9 @@ const ModalTeachers = ({ visible, onClose, teacher }) => {
 
     const handleFinish = (values) => {
 
-        addTeacherMutation.mutate(values, { onSuccess: onClose });
-        console.log(values);
-
+        addTeacherMutation.mutate(values, { 
+            onSuccess: () => {onClose(), form.resetFields() }
+        });
 
     };
 

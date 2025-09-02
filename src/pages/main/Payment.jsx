@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Button, Modal, Form, Input, Select, DatePicker, Card, Statistic, Tabs, Space, Popconfirm, message, Empty, Spin, Alert, Row, Col, Tag } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, DatePicker, Card, Statistic, Tabs, Space, Popconfirm, message, Empty, Spin, Alert, Row, Col, Tag, Typography, Tooltip } from 'antd';
 import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled, ShoppingOutlined, BankOutlined, UserAddOutlined } from '@ant-design/icons';
 import usePayment from '../../hooks/usePayment';
 import dayjs from 'dayjs';
@@ -7,9 +7,10 @@ import PaymentAddModal from '../../components/payment-modal/PaymentAddModal';
 import toast from 'react-hot-toast';
 import ExpensesAddModal from '../../components/payment-modal/ExpensesAddModal';
 import ExpensesTeachersModal from '../../components/payment-modal/ExpensesTeachersModal';
+import Title from 'antd/es/typography/Title';
+import Paragraph from 'antd/es/skeleton/Paragraph';
 
-const { Option } = Select;
-const { TabPane } = Tabs;
+
 
 const Payment = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -20,7 +21,10 @@ const Payment = () => {
   const [openPopConfirmKey, setOpenPopConfirmKey] = useState(null);
   const [openAddTeacherExpenses, setOenAddTeacherExpenses] = useState(false);
 
-  // usePayment hook'ini parametrlar bilan chaqirish
+
+
+
+
   const {
     fetchPayment,
     fetchPaymentByMonth,
@@ -29,6 +33,7 @@ const Payment = () => {
     fetchExpensesByMonth,
     postPaymentMutation,
     fetchFinancialSummary,
+    fetchFullFinancialSummary,
     deletePaymentMutation,
     deleteExpenseMutation,
     postTeacherSalaryExpenseMutation,
@@ -37,6 +42,8 @@ const Payment = () => {
     isLoading,
     error
   } = usePayment(selectedMonth, selectedCourseId);
+
+
 
   // Kurslar ro'yxati (PaymentAddModal uchun)
   const courses = useMemo(() => {
@@ -51,6 +58,9 @@ const Payment = () => {
     return Array.from(courseSet).map(item => JSON.parse(item));
   }, [fetchPayment.data]);
 
+
+
+
   // Xatoliklarni ko'rsatish (faqat bir marta ko'rsatish uchun)
   const [errorShown, setErrorShown] = useState(false);
   useEffect(() => {
@@ -62,6 +72,8 @@ const Payment = () => {
       setErrorShown(false);
     }
   }, [error, errorShown]);
+
+
 
   // To'lovni o'chirish
   const handleDeletePayment = useCallback(async (id) => {
@@ -88,6 +100,8 @@ const Payment = () => {
     toast.success("Ma'lumotlar yangilandi!");
   }, [refetchPaymentData, refetchExpenseData]);
 
+
+
   // To'lov qo'shish - Jadvaldan
   const postStudentFromTable = useCallback(async (record) => {
     try {
@@ -103,7 +117,6 @@ const Payment = () => {
 
       await postPaymentMutation.mutateAsync(payload);
       setOpenPopConfirmKey(null);
-      toast.success("To'lov muvaffaqiyatli qo'shildi!");
 
     } catch (error) {
       console.error('Post error:', error);
@@ -363,7 +376,7 @@ const Payment = () => {
                 <p><b>To'lov:</b> {typeof record.courseFee === 'number' ? record.courseFee.toLocaleString() : '0'} so'm</p>
               </Card>
             }
-            okText="Ha, qo'sh"
+            okText="Ha, qo'shish"
             cancelText="Bekor qilish"
             open={openPopConfirmKey === uniqueKey}
             onConfirm={() => postStudentFromTable(record)}
@@ -387,48 +400,85 @@ const Payment = () => {
     }
   ], [postStudentFromTable, postPaymentMutation.isLoading, openPopConfirmKey]);
 
+
+
   // Moliyaviy statistikalar
   const renderFinancialSummary = () => {
-    if (!fetchFinancialSummary.data) return null;
+    if (!fetchFinancialSummary.data || !fetchFullFinancialSummary.data) return null;
 
-    const { revenue, recordedExpenses, netProfit } = fetchFinancialSummary.data;
+    console.log("month Summary:", fetchFinancialSummary.data);
+
 
     return (
       <Row gutter={[16, 16]} className="mb-8">
-        <Col xs={24} sm={12} md={8}>
+        <Col xs={24} sm={12} md={6}>
           <Card className="border-gray-700 bg-gradient-to-r from-green-900 to-green-800">
-            {console.log(fetchFinancialSummary.data)}
+
             <Statistic
               title={<span className="text-gray-300">Jami <Tag>Oylik</Tag> Kurslar Daromadi</span>}
-              value={ revenue || 0}
+              value={fetchFinancialSummary.data?.revenue || 0}
               suffix="so'm"
-              valueStyle={{ color: '#10b981' }}
+              valueStyle={{ color: fetchFinancialSummary.data?.revenue >= 0 ? '#10b981' : '#ef4444' }}
               prefix={<DollarOutlined />}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={8}>
+        <Col xs={24} sm={12} md={6}>
           <Card className="border-gray-700 bg-gradient-to-r from-red-900 to-red-800">
             <Statistic
               title={<span className="text-gray-300">Jami <Tag>Oylik</Tag>Xarajat</span>}
-              value={recordedExpenses || 0}
+              value={fetchFinancialSummary.data?.recordedExpenses || 0}
               suffix="so'm"
-              valueStyle={{ color: '#ef4444' }}
+              valueStyle={{ color: '#FFC000' }}
               prefix={<DollarOutlined />}
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} md={8}>
+        <Col xs={24} sm={12} md={6}>
           <Card className="border-gray-700 bg-gradient-to-r from-blue-900 to-blue-800">
             <Statistic
               title={<span className="text-gray-300">Sof <Tag>Oylik</Tag>Foyda</span>}
-              value={netProfit || 0}
+              value={fetchFinancialSummary.data?.netProfit || 0}
               suffix="so'm"
-              valueStyle={{ color: netProfit >= 0 ? '#10b981' : '#ef4444' }}
+              valueStyle={{ color: fetchFinancialSummary.data?.netProfit >= 0 ? '#10b981' : '#ef4444' }}
               prefix={<DollarOutlined />}
             />
           </Card>
         </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card className="bg-gradient-to-r from-blue-900 to-blue-800 shadow-lg rounded-2xl p-4">
+            {/* <h2 className="text-lg font-semibold text-gray-200 mb-4">Moliyaviy Hisobot</h2> */}
+
+            <Tooltip title="Umumiy Hisobot">
+              <div className="flex justify-between items-center border-b border-blue-700 ">
+                <span className="text-gray-300">Kurslar jamg'armasi:</span>
+                <span className="text-green-400 font-bold">
+                  {fetchFullFinancialSummary.data?.payments?.toLocaleString() || 0} so'm
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center border-b border-blue-700 ">
+                <span className="text-gray-300">Jami xarajatlar:</span>
+                <span className="text-red-400 font-bold">
+                  {fetchFullFinancialSummary.data?.expenses?.toLocaleString() || 0} so'm
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300">Jami foyda:</span>
+                <span
+                  className={`font-bold ${(fetchFullFinancialSummary.data?.netProfit || 0) >= 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                    }`}
+                >
+                  {fetchFullFinancialSummary.data?.netProfit?.toLocaleString() || 0} so'm
+                </span>
+              </div>
+            </Tooltip>
+          </Card>
+        </Col>
+
       </Row>
     );
   };
@@ -579,7 +629,7 @@ const Payment = () => {
                     icon={<UserAddOutlined />}
                     onClick={() => setOenAddTeacherExpenses(true)}
                     className="bg-purple-600! hover:bg-purple-500!"
-                    >
+                  >
 
                     O'qituvchi Maoshini To'lash
                   </Button>
@@ -736,7 +786,7 @@ const Payment = () => {
         <ExpensesTeachersModal
           isOpen={openAddTeacherExpenses}
           onClose={() => setOenAddTeacherExpenses(false)}
-         />
+        />
       </div>
     </div>
   );

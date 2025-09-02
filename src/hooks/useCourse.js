@@ -1,43 +1,13 @@
-import { customAlphabet } from "nanoid";
 import API from "../services/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { use } from "react";
-
 
 // Create
 const Add_Course = async (payload) => {
   if (!payload.name || !payload.description || payload.fee === undefined || !payload.teachers) {
     throw new Error("Maydonlarni to'ldirish talab qilinadi!");
   }
-//   const numericId = customAlphabet("0123456789", 10); // uzunligi 10 ta raqam
-//   // id agar backendda avtomatik berilmasa
-//   if (!payload.id) {
-//     payload.id = numericId();
-//   }
-  console.log("Add_Course payload:", payload);
-  
   const response = await API.post("/courses", payload);
-  return response.data;
-};
-
-// Read (all)
-const Fetch_Courses = async () => {
-  const response = await API.get("/courses");
-  return response.data;
-};
-
-// Read (by id)
-const Fetch_Course_By_Id = async (id) => {
-  if (!id) throw new Error("Id talab qilinadi!");
-  const response = await API.get(`/courses/${id}`);
-  return response.data;
-};
-
-// read students
-const Fetch_Students_By_Course_Id = async (id) => {
-  if (!id) throw new Error("Id talab qilinadi!");
-  const response = await API.get(`/courses/${id}/students`);
   return response.data;
 };
 
@@ -46,7 +16,6 @@ const Put_Course = async (payload) => {
   if (!payload.id || !payload.name || !payload.description || payload.fee === undefined || !payload.teachers) {
     throw new Error("Maydonlarni to'ldirish talab qilinadi!");
   }
-
   const response = await API.put(`/courses/${payload.id}`, payload);
   return response.data;
 };
@@ -61,64 +30,74 @@ const Delete_Course = async (id) => {
 const useCourse = () => {
   const queryClient = useQueryClient();
 
+  // Add Course
   const addCourseMutation = useMutation({
     mutationFn: Add_Course,
+    onMutate: () => {
+      toast.loading("Kurs qo'shilmoqda...", { id: "addCourse" });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Kurs qo'shildi!");
+      toast.success("Kurs muvaffaqiyatli qo'shildi!", { id: "addCourse" });
     },
-    onError: (error) => {
-      toast.error(error.message || "Kurs qo'shishda xatolik!");
+    onError: (err) => {
+      toast.error(err.message || "Kurs qo'shishda xatolik yuz berdi.", { id: "addCourse" });
     }
   });
 
-  const getCourses = useQuery({
-    queryKey: ["courses"],
-    queryFn: Fetch_Courses
-  });
-
-  const getStudentsByCourseId = (id) => useQuery({
-    queryKey: ["courses", id, "students"],
-    queryFn: () => Fetch_Students_By_Course_Id(id),
-    enabled: !!id
-  });
-
-  const getCourseById = (id) =>
-    useQuery({
-      queryKey: ["course", id],
-      queryFn: () => Fetch_Course_By_Id(id),
-      enabled: !!id
-    });
-
+  // Update Course
   const putCourseMutation = useMutation({
     mutationFn: Put_Course,
+    onMutate: () => {
+      toast.loading("Kurs yangilanmoqda...", { id: "putCourse" });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Kurs yangilandi!");
+      toast.success("Kurs muvaffaqiyatli yangilandi!", { id: "putCourse" });
     },
-    onError: (error) => {
-      toast.error(error.message || "Kursni yangilashda xatolik!");
+    onError: (err) => {
+      toast.error(err.message || "Kursni yangilashda xatolik yuz berdi.", { id: "putCourse" });
     }
   });
 
+  // Delete Course
   const deleteCourseMutation = useMutation({
     mutationFn: Delete_Course,
+    onMutate: () => {
+      toast.loading("Kurs o'chirilmoqda...", { id: "deleteCourse" });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Kurs o'chirildi!");
+      toast.success("Kurs muvaffaqiyatli o'chirildi!", { id: "deleteCourse" });
     },
-    onError: (error) => {
-      toast.error(error.message || "Kursni o'chirishda xatolik!");
+    onError: (err) => {
+      toast.error(err.message || "Kursni o'chirishda xatolik yuz berdi.", { id: "deleteCourse" });
     }
   });
 
   return {
-    addCourseMutation,
-    getCourses,
+    addCourseMutation,     // aynan shu nomda qaytyapti
     putCourseMutation,
     deleteCourseMutation,
-    getCourseById,
-    getStudentsByCourseId
+
+    getCourses: useQuery({
+      queryKey: ["courses"],
+      queryFn: async () => (await API.get("/courses")).data
+    }),
+
+    getCourseById: (id) =>
+      useQuery({
+        queryKey: ["course", id],
+        queryFn: async () => (await API.get(`/courses/${id}`)).data,
+        enabled: !!id
+      }),
+
+    getStudentsByCourseId: (id) =>
+      useQuery({
+        queryKey: ["courses", id, "students"],
+        queryFn: async () => (await API.get(`/courses/${id}/students`)).data,
+        enabled: !!id
+      })
   };
 };
 
