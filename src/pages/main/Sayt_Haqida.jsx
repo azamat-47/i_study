@@ -17,7 +17,7 @@ const Sayt_Haqida = () => {
     {
       title: "Ustozlar bo'limi",
       images: [ustozlar, teacherModal],
-      description: "Bu bo'limda ustozlarni kuzatish tahrirlash mumkin va o'chirish mumkin"
+      description: "Bu bo'limda ustozlarni kuzatish tahrirlash  va o'chirish mumkin"
     },
     {
       title: "To'lovlar bo'limi",
@@ -49,11 +49,10 @@ const Sayt_Haqida = () => {
                     <img
                       src={image}
                       alt={`${section.title} ${imgIndex + 1}`}
-                      className="w-full rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
+                      className="w-full  rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer"
                       onClick={() => setActiveImage(image)}
                     />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center">
-                      <span className="text-white text-sm md:text-base">Kattalashtirish uchun bosing</span>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-center justify-center cursor-pointer ">
                     </div>
                   </div>
                 ))}

@@ -42,15 +42,7 @@ const TeachersPage = () => {
             title: "Kurslari", 
             dataIndex: "courses", 
             key: "courses",
-            render: (courses, record) => (
-                <Space>
-                    {courses.split(', ').map((course, index) => (
-                        <Link key={index} to={`/courses/${record.key}`}>
-                            <Tag color="blue">{course}</Tag>
-                        </Link>
-                    ))}
-                </Space>
-            )
+           
         },
         
         {
