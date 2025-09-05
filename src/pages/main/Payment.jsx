@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Table, Button, Modal, Form, Input, Select, DatePicker, Card, Statistic, Tabs, Space, Popconfirm, message, Empty, Spin, Alert, Row, Col, Tag, Typography, Tooltip } from 'antd';
+import { Table, Button,  DatePicker, Card, Statistic, Tabs, Space, Popconfirm, Empty, Spin, Alert, Row, Col, Tag, Tooltip } from 'antd';
 import { PlusOutlined, DeleteOutlined, DollarOutlined, CalendarOutlined, UserOutlined, BookOutlined, ReloadOutlined, ExclamationCircleOutlined, FileAddFilled, ShoppingOutlined, BankOutlined, UserAddOutlined } from '@ant-design/icons';
 import usePayment from '../../hooks/usePayment';
 import dayjs from 'dayjs';
@@ -7,8 +7,6 @@ import PaymentAddModal from '../../components/payment-modal/PaymentAddModal';
 import toast from 'react-hot-toast';
 import ExpensesAddModal from '../../components/payment-modal/ExpensesAddModal';
 import ExpensesTeachersModal from '../../components/payment-modal/ExpensesTeachersModal';
-import Title from 'antd/es/typography/Title';
-import Paragraph from 'antd/es/skeleton/Paragraph';
 
 
 
@@ -36,7 +34,6 @@ const Payment = () => {
     fetchFullFinancialSummary,
     deletePaymentMutation,
     deleteExpenseMutation,
-    postTeacherSalaryExpenseMutation,
     refetchPaymentData,
     refetchExpenseData,
     isLoading,
@@ -125,22 +122,6 @@ const Payment = () => {
   }, [postPaymentMutation]);
 
 
-
-  // O'qituvchi maoshini to'lash
-  const handlePayTeacherSalary = useCallback(async (teacherId, teacherName) => {
-    try {
-      const payload = {
-        teacherId: teacherId,
-        month: selectedMonth
-      };
-
-      await postTeacherSalaryExpenseMutation.mutateAsync(payload);
-      toast.success(`${teacherName} ning maoshi muvaffaqiyatli to'landi!`);
-    } catch (error) {
-      console.error('Pay teacher salary error:', error);
-      toast.error("O'qituvchi maoshini to'lashda xatolik yuz berdi");
-    }
-  }, [postTeacherSalaryExpenseMutation, selectedMonth]);
 
   const paymentColumns = useMemo(() => [
     {
