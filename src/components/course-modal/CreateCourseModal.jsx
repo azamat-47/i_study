@@ -18,10 +18,6 @@ const CreateCourseModal = ({ visible, onClose }) => {
       (t) => t.id === values.teacherId
     );
 
-    console.log(getTeachers.data);
-
-
-    console.log("Selected Teacher:", selectedTeacher);
 
 
     const payload = {
@@ -31,7 +27,6 @@ const CreateCourseModal = ({ visible, onClose }) => {
       teachers: [selectedTeacher], // to'liq obyekt yuboriladi
     };
 
-    console.log("CreateCourseModal payload:", payload);
 
 
     addCourseMutation.mutate(payload, {
