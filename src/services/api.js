@@ -1,48 +1,72 @@
-
-import axios from "axios";
-import { toast } from "react-hot-toast";
+// API.js
+import axios from 'axios';
+import { toast } from 'react-hot-toast';
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL, 
+  baseURL: 'http://istudy-production.up.railway.app/api', // Sizning server manzilingiz
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Request interceptor: har bir requestga token qo‘shish
 API.interceptors.request.use(
-    (req) => {
-        const token = localStorage.getItem("istudyAccessToken"); 
-        if (token) {
-            req.headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        // Har doim Content-Type JSON bo‘lsin
-        req.headers["Content-Type"] = "application/json";
-        return req;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor: 401 va 403 xatolarini boshqarish
-API.interceptors.response.use(
-    (res) => res,
-    (error) => {
-        const status = error.response?.status;
-
-        if (status === 401) {
-            // Token expired yoki noto‘g‘ri
-            localStorage.removeItem("istudyAccessToken");
-            localStorage.removeItem("refreshToken");
-            toast.error("Session expired. Keyinroq urinib kuring.");
-            setTimeout(() => {
-                window.location.replace("/login");
-            }, 500);
-        }
-
-        if (status === 403) {
-            toast.error("Sizda bu amalni bajarish huquqi yo'q!");
-        }
-
-        return Promise.reject(error);
+  (config) => {
+    const token = localStorage.getItem('accessToken'); // Tokenni localStorage dan oling
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
+
+API.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+    // Agar 401 Unauthorized xatosi bo'lsa va bu allaqachon qayta urinilmagan bo'lsa
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          // Refresh token mavjud emas, foydalanuvchini tizimdan chiqarish
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login'; // Login sahifasiga yo'naltirish
+          return Promise.reject(error);
+        }
+
+        const response = await axios.post('http://istudy-production.up.railway.app/api/auth/refresh', { refreshToken });
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+        API.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        originalRequest.headers['Authorization'] = `Bearer ${accessToken}`;
+
+        return API(originalRequest); // Asl so'rovni qayta urinish
+      } catch (refreshError) {
+        console.error('Refresh token xatosi:', refreshError);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login'; // Login sahifasiga yo'naltirish
+        return Promise.reject(refreshError);
+      }
+    }
+    // Boshqa xatoliklar
+    if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+    } else if (error.message) {
+        toast.error(error.message);
+    }
+    return Promise.reject(error);
+  }
+);
+
 
 export default API;

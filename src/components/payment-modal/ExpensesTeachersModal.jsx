@@ -1,8 +1,8 @@
 import { Form, Modal, Select, Input, DatePicker, InputNumber } from "antd";
 import { useState } from "react";
 import dayjs from "dayjs";
-import usePayment from "../../hooks/usePayment";
-import useTeacher from "../../hooks/useTeacher";
+import usePayment from "../../hooks/usePayments";
+import useTeacher from "../../hooks/useTeachers";
 
 const ExpensesTeachersModal = ({isOpen, onClose}) => {
   const { postTeacherSalaryExpenseMutation } = usePayment();
