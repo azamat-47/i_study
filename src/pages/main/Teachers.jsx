@@ -1,150 +1,120 @@
-import React, { useState } from "react";
-import { Button, Table, Space, Popconfirm, Input, Tag } from "antd";
-import { DollarOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
-
+import React, { useEffect, useMemo, useState } from "react";
+import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import useTeacher from "../../hooks/useTeacher";
-import ModalTeachers from "../../components/teacher-modal/ModalTeachers";
-import ModalTeaEdit from "../../components/teacher-modal/ModalTeaEdit";
+import TeacherCreateModal from "../../components/modals/teachers/TeacherCreate";
+import TeacherEditModal from "../../components/modals/teachers/TeacherEdit";
+import TagUi from "../../components/ui/Tag";
 
-const TeachersPage = () => {
-    const { getTeachers, deleteTeacherMutation } = useTeacher();
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedTeacher, setSelectedTeacher] = useState(null);
-    const [searchText, setSearchText] = useState("");
+const { Search } = Input;
 
-    if (getTeachers.isLoading) return <p>Yuklanmoqda...</p>;
-    if (getTeachers.isError) return <p>Error: {getTeachers.error.message}</p>;
+const Teachers = () => {
+  const [branchId, setBranchId] = useState(null);
+  const [search, setSearch] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState(null);
 
-    const teachers = getTeachers.data.map((item) => (
-        {
-            key: item.user.id,        // yoki id bo‘lmasa username unique bo‘lsin
-            username: item.user.username,
-            name: item.name,
-            email: item.email,
-            phone: item.phone,
-            salary: item.salary,
-            courses: item.courses.map((course) => course.name).join(", "), // kurs nomlarini olish va vergul bilan ajratish
-        }
-    ))
-    
-    const filterTeachers = teachers.filter((teacher) =>{
-        const search = searchText.toLowerCase();
-        return teacher.name.toLowerCase().includes(search) 
-    })
+  useEffect(() => {
+    const storedBranchId = localStorage.getItem("branchId");
+    if (storedBranchId) {
+      setBranchId(Number(storedBranchId));
+    }
+  }, []);
 
-    const columns = [
-        { title: "Username", dataIndex: "username", key: "username" },
-        { title: "Ism", dataIndex: "name", key: "name" },
-        { title: "Email", dataIndex: "email", key: "email" },
-        { title: "Telefon", dataIndex: "phone", key: "phone" },
-        { 
-            title: "Kurslari", 
-            dataIndex: "courses", 
-            key: "courses",
-            render: (courses, record) => (
-                <Space>
-                    {courses.split(', ').map((course, index) => (
-                        <Link key={index} to={`/kurs/${record.key}`}>
-                            <Tag color="blue">{course}</Tag>
-                        </Link>
-                    ))}
-                </Space>
-            )
-        },
-        
-        {
-            title: "Maosh", dataIndex: "salary", key: "salary",
-            render: (fee) => (
-                <Space>
-                    <DollarOutlined style={{ color: '#fa8c16' }} />
-                    <Tag color="cyan">{fee?.toLocaleString()} so'm</Tag>
-                </Space>
-            ),
-        },
-        {
-            title: "Actions",
-            key: "actions",
-            render: (_, record) => (
-                <Space>
-                    <Button
-                        type="primary"
-                        onClick={() => {
-                            setSelectedTeacher(record);
-                            setModalVisible(true);
-                        }}
-                    >
-                        O'zgartirish
-                    </Button>
-                    <Popconfirm
-                        title="Rostdan ham uchirishni holaysizmi?"
-                        onConfirm={() => deleteTeacherMutation.mutate(record.key)}
-                        okText="Ha"
-                        cancelText="Yo"
-                    >
-                        <Button danger>O'chirish</Button>
-                    </Popconfirm>
-                </Space>
-            ),
-        },
-    ];
+  const { teachersQuery, deleteTeacherMutation } = useTeacher(branchId);
 
-    return (
-        <div>
-            <div className="flex justify-between mb-4 gap-4">
-                <h2 className="text-xl font-bold">Ustozlar</h2>
-
-                <div className="flex gap-5">
-
-                    {/* 🔎 Search input */}
-                    <Input
-                            placeholder="Ustozlarni qidirish... {ism}"
-                            prefix={<SearchOutlined />}
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            allowClear
-                            style={{ width: 300, marginBottom: 16 }}
-                            
-                        />
-                    <Button
-                        type="primary"
-                        style={{ marginBottom: 16 }}
-                        onClick={() => {
-                            setSelectedTeacher(null); // Add rejimi uchun
-                            setModalVisible(true);
-                        }}
-                        icon={<PlusOutlined />}
-                    >
-                        Yangi Ustoz qo'shish
-                    </Button>
-                </div>
-            </div>
-
-            {/* Edit teacher modal */}
-            {selectedTeacher && (
-                <ModalTeaEdit
-                    visible={modalVisible}
-                    onClose={() => {
-                        setModalVisible(false);
-                        setSelectedTeacher(null);
-                    }}
-                    teacher={selectedTeacher}
-                />
-            )}
-
-            <Table
-                dataSource={filterTeachers}
-                columns={columns}
-                rowKey="id"
-            />
-
-            <ModalTeachers
-                visible={modalVisible}
-                onClose={() => setModalVisible(false)}
-                teacher={selectedTeacher}
-            />
-        </div>
+  const filteredTeachers = useMemo(() => {
+    if (!teachersQuery?.data) return [];
+    return teachersQuery.data.filter((t) =>
+      `${t.firstName} ${t.lastName}`.toLowerCase().includes(search.toLowerCase())
     );
+  }, [teachersQuery?.data, search]);
+
+  const columns = [
+    { title: "Ism", dataIndex: "firstName" },
+    { title: "Familiya", dataIndex: "lastName" },
+    { title: "Telefon", dataIndex: "phoneNumber" },
+    { title: "Maosh turi", dataIndex: "salaryType", render: (val) => <Tag color="blue">{val}</Tag> },
+    { 
+      title: "Maosh", 
+      render: (record) => 
+        record.salaryType === "FIXED"
+          ? <TagUi color="green">{record.baseSalary?.toLocaleString()} so'm</TagUi>
+          : <TagUi color="magenta">{record.paymentPercentage}%</TagUi>
+    },
+    { title: "Filial", dataIndex: "branchName" },
+    {
+      title: "Amallar",
+      render: (_, record) => (
+        <Space>
+          <Button
+            onClick={() => {
+              setSelectedTeacher(record);
+              setEditOpen(true);
+            }}
+          >
+            Tahrirlash
+          </Button>
+          <Popconfirm
+            title="O'qituvchini o'chirishni tasdiqlaysizmi?"
+            onConfirm={() => deleteTeacherMutation.mutate(record.id)}
+          >
+            <Button danger>O'chirish</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      {teachersQuery.isLoading && <p>Yuklanmoqda...</p>}
+      {teachersQuery.isError && <p>Xatolik: {teachersQuery.error.message}</p>}
+      {!teachersQuery.isLoading && !teachersQuery.isError && (
+        <>
+          <div className="flex justify-between mb-4">
+            <h2 className="text-xl font-bold">O'qituvchilar</h2>
+            <Space>
+              <Search
+                placeholder="Ism yoki familiya bo‘yicha qidirish"
+                onChange={(e) => setSearch(e.target.value)}
+                style={{ width: 300 }}
+              />
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setCreateOpen(true)}
+              >
+                Yangi O'qituvchi
+              </Button>
+            </Space>
+          </div>
+
+          <Table
+            dataSource={filteredTeachers || []}
+            columns={columns}
+            rowKey="id"
+          />
+
+          <TeacherCreateModal
+            open={createOpen}
+            onCancel={() => setCreateOpen(false)}
+            branchId={branchId}
+          />
+
+          {selectedTeacher && (
+            <TeacherEditModal
+              open={editOpen}
+              onCancel={() => setEditOpen(false)}
+              teacher={selectedTeacher}
+              branchId={branchId}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
 };
 
-export default TeachersPage;
+export default Teachers;

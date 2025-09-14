@@ -1,6 +1,6 @@
 // hooks/useUsers.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -41,7 +41,7 @@ const getUsersByBranch = async ({ queryKey }) => {
 };
 
 // useUsers hook
-export const useUsers = (branchId) => {
+const useUsers = (branchId) => {
   const queryClient = useQueryClient();
 
   // Get all users
@@ -104,3 +104,5 @@ export const useUsers = (branchId) => {
     usersByBranchQuery,
   };
 };
+
+export default useUsers;

@@ -1,6 +1,6 @@
 // hooks/useSalaries.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -44,7 +44,7 @@ const getSalaryHistoryForBranch = async ({ queryKey }) => {
 };
 
 // useSalaries hook
-export const useSalaries = (branchId) => {
+const useSalaries = (branchId) => {
   const queryClient = useQueryClient();
 
   // Calculate Teacher Salary
@@ -121,3 +121,5 @@ export const useSalaries = (branchId) => {
     salaryHistoryForBranchQuery,
   };
 };
+
+export default useSalaries;

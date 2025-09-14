@@ -1,6 +1,6 @@
 // hooks/useBranches.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -43,7 +43,7 @@ const deleteBranch = async (id) => {
 };
 
 // useBranches hook
-export const useBranches = () => {
+const useBranches = () => {
   const queryClient = useQueryClient();
 
   // Get all branches
@@ -120,3 +120,6 @@ export const useBranches = () => {
     deleteBranchMutation,
   };
 };
+
+
+export default useBranches;

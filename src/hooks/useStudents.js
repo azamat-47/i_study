@@ -1,6 +1,6 @@
 // hooks/useStudents.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -94,7 +94,7 @@ const getStudentsByPaymentStatus = async ({ queryKey }) => {
 
 
 // useStudents hook
-export const useStudents = (branchId) => {
+const useStudents = (branchId) => {
   const queryClient = useQueryClient();
 
   // Get all students for a branch
@@ -230,3 +230,5 @@ export const useStudents = (branchId) => {
     studentsByPaymentStatusQuery,
   };
 };
+
+export default useStudents;

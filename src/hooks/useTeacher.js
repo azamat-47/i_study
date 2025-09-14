@@ -1,6 +1,6 @@
 // hooks/useTeachers.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -59,7 +59,7 @@ const getTeachersBySalaryType = async ({ queryKey }) => {
 
 
 // useTeachers hook
-export const useTeachers = (branchId) => {
+const useTeacher = (branchId) => {
   const queryClient = useQueryClient();
 
   // Get all teachers for a branch
@@ -146,3 +146,5 @@ export const useTeachers = (branchId) => {
     teachersBySalaryTypeQuery,
   };
 };
+
+export default useTeacher;

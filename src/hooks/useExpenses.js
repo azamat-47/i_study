@@ -1,6 +1,6 @@
 // hooks/useExpenses.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -44,7 +44,7 @@ const deleteExpense = async (id) => {
 };
 
 // useExpenses hook
-export const useExpenses = (branchId) => {
+const useExpenses = (branchId) => {
   const queryClient = useQueryClient();
 
   // Get all expenses for a branch
@@ -121,3 +121,5 @@ export const useExpenses = (branchId) => {
     deleteExpenseMutation,
   };
 };
+
+export default useExpenses;

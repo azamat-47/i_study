@@ -1,6 +1,6 @@
 // hooks/usePayments.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
 // API funksiyalari
@@ -36,7 +36,7 @@ const getPaymentsByStudent = async ({ queryKey }) => {
 };
 
 // usePayments hook
-export const usePayments = (branchId) => {
+const usePayment = (branchId) => {
   const queryClient = useQueryClient();
 
   // Get all payments for a branch
@@ -87,3 +87,5 @@ export const usePayments = (branchId) => {
     paymentsByStudentQuery,
   };
 };
+
+export default usePayment;

@@ -1,6 +1,6 @@
 // hooks/useReports.js
 import { useQuery } from '@tanstack/react-query';
-import API from '../API';
+import API from '../services/api';
 
 // API funksiyalari
 
@@ -116,7 +116,7 @@ const getAllTimeExpenseReport = async ({ queryKey }) => {
 
 
 // useReports hook
-export const useReports = (branchId) => {
+const useReports = (branchId) => {
   // Get Salary Range Report
   const salaryRangeReportQuery = ({ startYear, startMonth, endYear, endMonth }) => useQuery({
     queryKey: ['salary-reports-range', { branchId, startYear, startMonth, endYear, endMonth }],
@@ -241,3 +241,5 @@ export const useReports = (branchId) => {
     allTimeExpenseReportQuery,
   };
 };
+
+export default useReports;

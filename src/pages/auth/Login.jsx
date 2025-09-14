@@ -2,7 +2,6 @@ import React from "react";
 import { Form, Input, Button, Typography, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
-import toast from "react-hot-toast";
 
 const { Title } = Typography;
 
@@ -16,11 +15,9 @@ const Login = () => {
         // Agar backenddan token kelsa
         if (data?.accessToken) {
           try {
-            message.success("Muvaffaqiyatli kirdingiz!");
             navigate("/"); // Asosiy sahifaga yo'naltirish
           } catch (err) {
             console.error("LocalStorage error:", err);
-            message.error("LocalStorage ga yozishda xatolik yuz berdi.");
           }
         } else {
           message.error("Token topilmadi!");
@@ -28,7 +25,6 @@ const Login = () => {
       },
       onError: (err) => {
         console.error("Login error:", err);
-        message.error("Login muvaffaqiyatsiz bo'ldi!");
       },
     });
 
@@ -57,7 +53,7 @@ const Login = () => {
             hasFeedback
             rules={[
               { required: true, message: "Username to'liq kiriting!" },
-              { min: 6, message: "Username kamida 6 ta harfdan iborat bo'lishi kerak!" },
+              { min: 4, message: "Username kamida 4 ta harfdan iborat bo'lishi kerak!" },
             ]}
           >
             <Input placeholder="Username'ingizni kiriting" size="large" />
@@ -69,7 +65,7 @@ const Login = () => {
             hasFeedback
             rules={[
               { required: true, message: "Iltimos parolni to'liq kiriting!" },
-              { min: 6, message: "Parol 6 ta belgidan kam bo'lmasligi kerak!" },
+              { min: 4, message: "Parol 4 ta belgidan kam bo'lmasligi kerak!" },
             ]}
           >
             <Input.Password placeholder="Parolni kiriting" size="large" />
