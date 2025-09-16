@@ -1,9 +1,7 @@
-// hooks/useUsers.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../services/api';
 import { toast } from 'react-hot-toast';
 
-// API funksiyalari
 
 // Get all users
 const getAllUsers = async () => {

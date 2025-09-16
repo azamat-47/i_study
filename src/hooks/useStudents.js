@@ -1,4 +1,3 @@
-// hooks/useStudents.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -21,7 +20,7 @@ const getStudentById = async ({ queryKey }) => {
 
 // Create Student
 const createStudent = async (payload) => {
-  if (!payload.firstName || !payload.lastName || !payload.branchId) {
+  if (!payload.firstName || !payload.lastName || !payload.branchId || !payload.phoneNumber || payload.groupIds.length === 0) {
     throw new Error("Ism, familiya va filial majburiy.");
   }
   const response = await API.post('/students', payload);
@@ -30,7 +29,7 @@ const createStudent = async (payload) => {
 
 // Update Student
 const updateStudent = async ({ id, payload }) => {
-  if (!payload.firstName || !payload.lastName || !payload.branchId) {
+  if (!payload.firstName || !payload.lastName || !payload.branchId || !payload.phoneNumber || payload.groupIds.length === 0) {
     throw new Error("Ism, familiya va filial majburiy.");
   }
   const response = await API.put(`/students/${id}`, payload);

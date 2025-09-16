@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Table, Button, Input, Popconfirm, Space } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { useGroups } from "../../hooks/useGroups";
 import { useNavigate } from "react-router-dom";
 import GroupCreateModal from "../../components/modals/groups/GroupCreateModal";
@@ -36,23 +37,23 @@ const Groups = () => {
 
   const columns = [
     { title: "Nomi", dataIndex: "name" },
-    { title: "Kurs", dataIndex: "courseId" },
-    { title: "O'qituvchi", dataIndex: "teacherId" },
+    { title: "Kurs", dataIndex: "teacherName" },
+    { title: "O'qituvchi", dataIndex: "teacherName" },
     { title: "Boshlanish", dataIndex: "startTime" },
     { title: "Tugash", dataIndex: "endTime" },
     {
       title: "Amallar",
       render: (_, record) => (
-        <>
-          <Button type="link" onClick={() => navigate(`/groups/${record.id}`)}>Ko'rish</Button>
-          <Button type="link" onClick={() => setEditGroup(record)}>Tahrirlash</Button>
+        <Space>
+          <Button variant="filled" color="blue" onClick={() => navigate(`/groups/${record.id}`)}>Ko'rish</Button>
+          <Button variant="filled" color="cyan"  onClick={() => setEditGroup(record)}>Tahrirlash</Button>
           <Popconfirm
             title="O'chirishni tasdiqlaysizmi?"
             onConfirm={() => deleteGroupMutation.mutate(record.id)}
           >
-            <Button type="link" danger>O'chirish</Button>
+            <Button variant="filled" danger>O'chirish</Button>
           </Popconfirm>
-        </>
+        </Space>
       ),
     },
   ];
@@ -64,10 +65,10 @@ const Groups = () => {
       {!groupsQuery.isLoading && !groupsQuery.isError && (
         <>
           <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-            <h1>Guruhlar</h1>
+            <h1 className="font-bold text-2xl">Guruhlar</h1>
             <Space>
             <Search placeholder="Guruh qidirish" onChange={(e) => setSearch(e.target.value)} style={{ width: 300 }} />
-            <Button type="primary" onClick={() => setCreateOpen(true)}>+ Guruh qo'shish</Button>
+            <Button type="primary" onClick={() => setCreateOpen(true)} icon={<PlusOutlined />}>Guruh qo'shish</Button>
             </Space>
           </div>
           <Table rowKey="id" loading={groupsQuery?.isLoading} dataSource={filteredGroups} columns={columns} />

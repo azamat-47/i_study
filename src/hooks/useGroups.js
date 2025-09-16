@@ -1,4 +1,3 @@
-// hooks/useGroups.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -24,7 +23,14 @@ const createGroup = async (payload) => {
   if (!payload.name || !payload.courseId || !payload.teacherId || !payload.branchId || !payload.startTime || !payload.endTime) {
     throw new Error("Guruh nomi, kurs, o'qituvchi, filial, boshlanish va tugash vaqti majburiy.");
   }
-  const response = await API.post('/groups', payload);
+
+  const body = {
+    ...payload,
+    studentIds: payload.studentIds || [],
+    daysOfWeek: payload.daysOfWeek || []
+  };
+
+  const response = await API.post('/groups', body);
   return response.data;
 };
 
@@ -33,7 +39,14 @@ const updateGroup = async ({ id, payload }) => {
   if (!payload.name || !payload.courseId || !payload.teacherId || !payload.branchId || !payload.startTime || !payload.endTime) {
     throw new Error("Guruh nomi, kurs, o'qituvchi, filial, boshlanish va tugash vaqti majburiy.");
   }
-  const response = await API.put(`/groups/${id}`, payload);
+
+  const body = {
+    ...payload,
+    studentIds: payload.studentIds || [],
+    daysOfWeek: payload.daysOfWeek || []
+  };
+
+  const response = await API.put(`/groups/${id}`, body);
   return response.data;
 };
 
@@ -76,7 +89,6 @@ export const useGroups = (branchId) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups', branchId] });
-      // Guruhga talabalar qo'shilgan bo'lsa, tegishli talaba keshlarini ham yangilash kerak bo'lishi mumkin
       queryClient.invalidateQueries({ queryKey: ['students', branchId] });
       toast.success("Guruh muvaffaqiyatli qo'shildi!", { id: "createGroup" });
     },
@@ -94,7 +106,7 @@ export const useGroups = (branchId) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['groups', branchId] });
       queryClient.invalidateQueries({ queryKey: ['group', data.id] });
-      queryClient.invalidateQueries({ queryKey: ['students', branchId] }); // Guruh o'zgarganda talabalar ma'lumotlari ham o'zgarishi mumkin
+      queryClient.invalidateQueries({ queryKey: ['students', branchId] });
       toast.success("Guruh muvaffaqiyatli yangilandi!", { id: "updateGroup" });
     },
     onError: (err) => {
@@ -110,7 +122,7 @@ export const useGroups = (branchId) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups', branchId] });
-      queryClient.invalidateQueries({ queryKey: ['students', branchId] }); // Guruh o'chirilganda talabalar ma'lumotlari ham o'zgarishi mumkin
+      queryClient.invalidateQueries({ queryKey: ['students', branchId] });
       toast.success("Guruh muvaffaqiyatli o'chirildi!", { id: "deleteGroup" });
     },
     onError: (err) => {
