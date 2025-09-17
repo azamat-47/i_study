@@ -14,6 +14,7 @@ import useAuth from './hooks/useAuth';
 
 import main_logo from "./assets/mainLogo.png"
 import { GiTeacher } from 'react-icons/gi';
+import { AiOutlineGroup } from 'react-icons/ai';
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -23,7 +24,7 @@ const App = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  const { logout } = useAuth();
+  const { logoutMutation } = useAuth();
   
   
 
@@ -35,11 +36,12 @@ const App = () => {
   }, [screens]);
 
   const handleConfirm = () => {
-    logout();
+    logoutMutation.mutate(localStorage.getItem('userId'));
   };
 
   const menuItems = [
-    { key: '/', icon: <MdGroups3 size={20} />, link: "/", title:"Guruhlar" },
+    { key: '/', icon: <AiOutlineGroup size={20} />, link: "/", title:"Kurslar" },
+    { key: '/guruhlar', icon: <MdGroups3 size={20} />, link: "/guruhlar", title:"Guruhlar" },
     { key: '/tolovlar', icon: <MdPayment size={20} />, link: "/tolovlar" , title:"To'lovlar" },
     { key: '/uqituvchilar', icon: <GiTeacher size={20} />, link: "/uqituvchilar", title: "Ustozlar" },
     { key: '/uquvchilar', icon: <PiStudentFill size={20} />, link: "/uquvchilar", title:"O'quvchilar" },

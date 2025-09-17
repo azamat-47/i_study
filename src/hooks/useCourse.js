@@ -1,103 +1,136 @@
-import API from "../services/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import API from '../services/api';
+import { toast } from 'react-hot-toast';
 
-// Create
-const Add_Course = async (payload) => {
-  if (!payload.name || !payload.description || payload.fee === undefined || !payload.teachers) {
-    throw new Error("Maydonlarni to'ldirish talab qilinadi!");
-  }
-  const response = await API.post("/courses", payload);
+// API funksiyalari
+
+// Get all courses by branch
+const getCoursesByBranch = async ({ queryKey }) => {
+  const [, branchId] = queryKey;
+  const response = await API.get(`/courses?branchId=${branchId}`);
   return response.data;
 };
 
-// Update
-const Put_Course = async (payload) => {
-  if (!payload.id || !payload.name || !payload.description || payload.fee === undefined || !payload.teachers) {
-    throw new Error("Maydonlarni to'ldirish talab qilinadi!");
-  }
-  const response = await API.put(`/courses/${payload.id}`, payload);
+// Get course by ID
+const getCourseById = async ({ queryKey }) => {
+  const [, courseId] = queryKey;
+  const response = await API.get(`/courses/${courseId}`);
   return response.data;
 };
 
-// Delete
-const Delete_Course = async (id) => {
-  if (!id) throw new Error("Id talab qilinadi!");
+// Create Course
+const createCourse = async (payload) => {
+  if (!payload.name || !payload.price || !payload.branchId || !payload.durationMonths || !payload.description) {
+    throw new Error("Kurs nomi, narxi va filiali majburiy.");
+  }
+
+  console.log("useCourse p",payload)
+  
+  const response = await API.post('/courses', payload);
+  return response.data;
+};
+
+// Update Course
+const updateCourse = async ({ id, payload }) => {
+  if (!payload.name || !payload.price || !payload.branchId) {
+    throw new Error("Kurs nomi, narxi va filiali majburiy.");
+  }
+  const response = await API.put(`/courses/${id}`, payload);
+  return response.data;
+};
+
+// Delete Course
+const deleteCourse = async (id) => {
   const response = await API.delete(`/courses/${id}`);
   return response.data;
 };
 
-const useCourse = () => {
+// Search Courses
+const searchCourses = async ({ queryKey }) => {
+  const [, { branchId, name }] = queryKey;
+  const response = await API.get(`/courses/search?branchId=${branchId}${name ? `&name=${name}` : ''}`);
+  return response.data;
+};
+
+// useCourses hook
+ const useCourse = (branchId) => {
   const queryClient = useQueryClient();
 
-  // Add Course
-  const addCourseMutation = useMutation({
-    mutationFn: Add_Course,
+  // Get all courses for a branch
+  const coursesQuery = useQuery({
+    queryKey: ['courses', branchId],
+    queryFn: getCoursesByBranch,
+    enabled: !!branchId,
+  });
+
+  // Get a single course by ID
+  const courseByIdQuery = (courseId) => useQuery({
+    queryKey: ['course', courseId],
+    queryFn: getCourseById,
+    enabled: !!courseId,
+  });
+
+  // Create Course
+  const createCourseMutation = useMutation({
+    mutationFn: createCourse,
     onMutate: () => {
-      toast.loading("Kurs qo'shilmoqda...", { id: "addCourse" });
+      toast.loading("Kurs qo'shilmoqda...", { id: "createCourse" });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Kurs muvaffaqiyatli qo'shildi!", { id: "addCourse" });
+      queryClient.invalidateQueries({ queryKey: ['courses', branchId] }); // Barcha kurslar keshini yangilash
+      toast.success("Kurs muvaffaqiyatli qo'shildi!", { id: "createCourse" });
     },
     onError: (err) => {
-      toast.error(err.message || "Kurs qo'shishda xatolik yuz berdi.", { id: "addCourse" });
+      toast.error(err.response?.data?.message || err.message || "Kurs qo'shishda xatolik yuz berdi.", { id: "createCourse" });
     }
   });
 
   // Update Course
-  const putCourseMutation = useMutation({
-    mutationFn: Put_Course,
+  const updateCourseMutation = useMutation({
+    mutationFn: updateCourse,
     onMutate: () => {
-      toast.loading("Kurs yangilanmoqda...", { id: "putCourse" });
+      toast.loading("Kurs yangilanmoqda...", { id: "updateCourse" });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
-      toast.success("Kurs muvaffaqiyatli yangilandi!", { id: "putCourse" });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['courses', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['course', data.id] }); // Aynan shu kurs keshini yangilash
+      toast.success("Kurs muvaffaqiyatli yangilandi!", { id: "updateCourse" });
     },
     onError: (err) => {
-      toast.error(err.message || "Kursni yangilashda xatolik yuz berdi.", { id: "putCourse" });
+      toast.error(err.response?.data?.message || err.message || "Kursni yangilashda xatolik yuz berdi.", { id: "updateCourse" });
     }
   });
 
   // Delete Course
   const deleteCourseMutation = useMutation({
-    mutationFn: Delete_Course,
+    mutationFn: deleteCourse,
     onMutate: () => {
       toast.loading("Kurs o'chirilmoqda...", { id: "deleteCourse" });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      queryClient.invalidateQueries({ queryKey: ['courses', branchId] });
       toast.success("Kurs muvaffaqiyatli o'chirildi!", { id: "deleteCourse" });
     },
     onError: (err) => {
-      toast.error(err.message || "Kursni o'chirishda xatolik yuz berdi.", { id: "deleteCourse" });
+      toast.error(err.response?.data?.message || err.message || "Kursni o'chirishda xatolik yuz berdi.", { id: "deleteCourse" });
     }
   });
 
+  // Search Courses
+  const searchCoursesQuery = (name) => useQuery({
+    queryKey: ['courses-search', { branchId, name }],
+    queryFn: searchCourses,
+    enabled: !!branchId, // Faqat branchId mavjud bo'lsa ishlatilsin
+  });
+
+
   return {
-    addCourseMutation,     // aynan shu nomda qaytyapti
-    putCourseMutation,
+    coursesQuery,
+    courseByIdQuery,
+    createCourseMutation,
+    updateCourseMutation,
     deleteCourseMutation,
-
-    getCourses: useQuery({
-      queryKey: ["courses"],
-      queryFn: async () => (await API.get("/courses")).data
-    }),
-
-    getCourseById: (id) =>
-      useQuery({
-        queryKey: ["course", id],
-        queryFn: async () => (await API.get(`/courses/${id}`)).data,
-        enabled: !!id
-      }),
-
-    getStudentsByCourseId: (id) =>
-      useQuery({
-        queryKey: ["courses", id, "students"],
-        queryFn: async () => (await API.get(`/courses/${id}/students`)).data,
-        enabled: !!id
-      })
+    searchCoursesQuery,
   };
 };
 

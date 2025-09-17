@@ -1,97 +1,150 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import API from "../services/api"
-import toast from "react-hot-toast";
+// hooks/useTeachers.js
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import API from '../services/api';
+import { toast } from 'react-hot-toast';
 
-const Add_Teacher = async({username, password, name, email, phone, salary}) => {
-    if (!username || !password || !name || !email || !phone || salary === undefined || salary === null) {
-        throw new Error("Maydonlarni to'ldirish talab qilinadi!");
-    }
-    const response = await API.post("/api/admin/teachers", {username, password, name, email, phone, salary})
-    return response.data;
-}
+// API funksiyalari
 
-const Fetch_Teachers = async () => {
-    const response = await API.get("/api/teachers")
-    return response.data;
-}
-
-const Put_Teacher = async ({ id, username, name, email, phone, salary, userId }) => {
-    if (!id || !userId || !username || !name || !email || !phone || salary === undefined || salary === null) {
-      throw new Error("Maydonlarni to'ldirish talab qilinadi!");
-    }
-  
-    const response = await API.put(`/api/admin/teachers/${id}`, {
-      id,
-      name,
-      email,
-      phone,
-      salary,
-      user: {
-        id: userId,
-        username: username
-      }
-    });
-    return response.data;
+// Get all teachers by branch
+const getTeachersByBranch = async ({ queryKey }) => {
+  const [, branchId] = queryKey;
+  const response = await API.get(`/teachers?branchId=${branchId}`);
+  return response.data;
 };
-  
-const Delete_Teacher = async (id) => {
-    if (!id) throw new Error("Id talab qilinadi!");
-    const response = await API.delete(`/api/admin/teachers/${id}`);
-    return response.data;
-}
+
+// Get teacher by ID
+const getTeacherById = async ({ queryKey }) => {
+  const [, teacherId] = queryKey;
+  const response = await API.get(`/teachers/${teacherId}`);
+  return response.data;
+};
+
+// Create Teacher
+const createTeacher = async (payload) => {
+  if (!payload.firstName || !payload.lastName || !payload.salaryType || !payload.branchId) {
+    throw new Error("Ism, familiya, ish haqi turi va filial majburiy.");
+  }
+  const response = await API.post('/teachers', payload);
+  return response.data;
+};
+
+// Update Teacher
+const updateTeacher = async ({ id, payload }) => {
+  if (!payload.firstName || !payload.lastName || !payload.salaryType || !payload.branchId) {
+    throw new Error("Ism, familiya, ish haqi turi va filial majburiy.");
+  }
+  const response = await API.put(`/teachers/${id}`, payload);
+  return response.data;
+};
+
+// Delete Teacher
+const deleteTeacher = async (id) => {
+  const response = await API.delete(`/teachers/${id}`);
+  return response.data;
+};
+
+// Search Teachers
+const searchTeachers = async ({ queryKey }) => {
+  const [, { branchId, name }] = queryKey;
+  const response = await API.get(`/teachers/search?branchId=${branchId}${name ? `&name=${name}` : ''}`);
+  return response.data;
+};
+
+// Get Teachers by Salary Type
+const getTeachersBySalaryType = async ({ queryKey }) => {
+  const [, { branchId, salaryType }] = queryKey;
+  const response = await API.get(`/teachers/by-salary-type?branchId=${branchId}&salaryType=${salaryType}`);
+  return response.data;
+};
 
 
-const useTeacher = () => {
-    const queryClient = useQueryClient();
+// useTeachers hook
+const useTeacher = (branchId) => {
+  const queryClient = useQueryClient();
 
-    const addTeacherMutation = useMutation({
-        mutationFn: Add_Teacher,
-        onMutate: () => {
-            toast.loading("Ustoz qo'shilmoqda...", { id: "addTeacher" });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["teachers"] });
-            toast.success("Ustoz muvaffaqiyatli qo'shildi!", { id: "addTeacher" });
-        },
-        onError: (err) => {
-            toast.error(err.message || "Ustoz qo'shishda xatolik yuz berdi.", { id: "addTeacher" });
-        }
-    });
+  // Get all teachers for a branch
+  const teachersQuery = useQuery({
+    queryKey: ['teachers', branchId],
+    queryFn: getTeachersByBranch,
+    enabled: !!branchId,
+  });
 
-    const getTeachers = useQuery({
-        queryKey: ["teachers"],
-        queryFn: Fetch_Teachers
-    });
+  // Get a single teacher by ID
+  const teacherByIdQuery = (teacherId) => useQuery({
+    queryKey: ['teacher', teacherId],
+    queryFn: getTeacherById,
+    enabled: !!teacherId,
+  });
 
-    const deleteTeacherMutation = useMutation({
-        mutationFn: Delete_Teacher,
-        onMutate: () => {
-            toast.loading("Teacher o'chirilmoqda...", { id: "deleteTeacher" });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["teachers"] });
-            toast.success("Teacher muvaffaqiyatli o'chirildi!", { id: "deleteTeacher" });
-        },
-        onError: (err) => {
-            toast.error(err.message || "O'chirishda xatolik yuz berdi.", { id: "deleteTeacher" });
-        }
-    });
+  // Create Teacher
+  const createTeacherMutation = useMutation({
+    mutationFn: createTeacher,
+    onMutate: () => {
+      toast.loading("O'qituvchi qo'shilmoqda...", { id: "createTeacher" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers', branchId] });
+      toast.success("O'qituvchi muvaffaqiyatli qo'shildi!", { id: "createTeacher" });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || "O'qituvchi qo'shishda xatolik yuz berdi.", { id: "createTeacher" });
+    }
+  });
 
-    const updateTeacherMutation = useMutation({
-        mutationFn: Put_Teacher,
-        onMutate: () => {
-            toast.loading("Teacher yangilanmoqda...", { id: "updateTeacher" });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["teachers"] });
-            toast.success("Teacher muvaffaqiyatli yangilandi!", { id: "updateTeacher" });
-        },
-        onError: (err) => {
-            toast.error(err.message || "Yangilashda xatolik yuz berdi.", { id: "updateTeacher" });
-        }
-    });
+  // Update Teacher
+  const updateTeacherMutation = useMutation({
+    mutationFn: updateTeacher,
+    onMutate: () => {
+      toast.loading("O'qituvchi yangilanmoqda...", { id: "updateTeacher" });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['teachers', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['teacher', data.id] });
+      toast.success("O'qituvchi muvaffaqiyatli yangilandi!", { id: "updateTeacher" });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || "O'qituvchini yangilashda xatolik yuz berdi.", { id: "updateTeacher" });
+    }
+  });
 
-    return { addTeacherMutation, deleteTeacherMutation, getTeachers, updateTeacherMutation };
-}
+  // Delete Teacher
+  const deleteTeacherMutation = useMutation({
+    mutationFn: deleteTeacher,
+    onMutate: () => {
+      toast.loading("O'qituvchi o'chirilmoqda...", { id: "deleteTeacher" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachers', branchId] });
+      toast.success("O'qituvchi muvaffaqiyatli o'chirildi!", { id: "deleteTeacher" });
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || err.message || "O'qituvchini o'chirishda xatolik yuz berdi.", { id: "deleteTeacher" });
+    }
+  });
+
+  // Search Teachers
+  const searchTeachersQuery = (name) => useQuery({
+    queryKey: ['teachers-search', { branchId, name }],
+    queryFn: searchTeachers,
+    enabled: !!branchId,
+  });
+
+  // Get Teachers by Salary Type
+  const teachersBySalaryTypeQuery = (salaryType) => useQuery({
+    queryKey: ['teachers-by-salary-type', { branchId, salaryType }],
+    queryFn: getTeachersBySalaryType,
+    enabled: !!branchId && !!salaryType,
+  });
+
+  return {
+    teachersQuery,
+    teacherByIdQuery,
+    createTeacherMutation,
+    updateTeacherMutation,
+    deleteTeacherMutation,
+    searchTeachersQuery,
+    teachersBySalaryTypeQuery,
+  };
+};
 
 export default useTeacher;
