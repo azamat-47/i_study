@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Button, DatePicker, Space, Statistic, Row, Col, Table, Tag, Typography } from 'antd';
+import { Card, Tabs, Button, DatePicker, Space, Statistic, Row, Col, Table, Typography } from 'antd';
 import { PlusOutlined, CalendarOutlined, DollarOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import useReports from '../../hooks/useReports';
@@ -8,6 +8,7 @@ import useExpenses from '../../hooks/useExpenses';
 import useStudents from '../../hooks/useStudents'; // useStudents hookini import qilamiz
 import AddPaymentModal from '../../components/modals/payment/AddPaymentModal';
 import AddExpenseModal from '../../components/modals/payment/AddExpenseModal';
+import TagUi from '../../components/ui/Tag';
 
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
@@ -97,7 +98,7 @@ const Payment = () => {
       title: 'Miqdor',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount) => `${amount} UZS`,
+      render: (amount) => <TagUi>{amount} so'm</TagUi>,
     },
     {
       title: 'Sana',
@@ -169,22 +170,7 @@ const Payment = () => {
     setFilterType('day'); // Agar bitta sana tanlansa, kunlik filtrga o'tish
   };
 
-  const handleRangeChange = (dates) => {
-    setSelectedRange(dates);
-    setFilterType('range'); // Agar sana oralig'i tanlansa, oralig'i filtrga o'tish
-  };
-
-  const handleFilterTypeChange = (type) => {
-    setFilterType(type);
-    if (type === 'day') {
-      setSelectedDate(dayjs());
-    } else if (type === 'month') {
-      setSelectedDate(dayjs());
-    } else if (type === 'range') {
-      setSelectedRange([dayjs().startOf('month'), dayjs().endOf('month')]);
-    }
-  };
-
+  
   return (
     <div >
       <Title level={2}>Moliyaviy Boshqaruv</Title>
