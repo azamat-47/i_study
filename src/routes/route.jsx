@@ -10,6 +10,7 @@ import Sayt_Haqida from "../pages/main/Sayt_Haqida";
 import GroupDetail from "../components/details/group/GroupDetail.jsx";
 import Groups from "../pages/main/Groups.jsx";
 import Courses from "../pages/main/Courses.jsx";
+import StudentDetail from "../components/details/student/StudentDetail.jsx";
 
 
 const router = createBrowserRouter([
@@ -34,7 +35,8 @@ const router = createBrowserRouter([
                     { path: "/uquvchilar", element: <Students /> },
                     { path: "/uqituvchilar", element: <Teachers /> },
                     { path: "/sayt_haqida", element: <Sayt_Haqida /> },
-                    { path: "/groups/:id", element: <GroupDetail />}
+                    { path: "/groups/:id", element: <GroupDetail />},
+                    { path: "/students/:id", element: <StudentDetail />}
                 ]
             }
         ]

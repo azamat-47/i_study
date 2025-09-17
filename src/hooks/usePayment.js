@@ -1,4 +1,3 @@
-// hooks/usePayments.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../services/api';
 import { toast } from 'react-hot-toast';
@@ -32,6 +31,15 @@ const createPayment = async (payload) => {
 const getPaymentsByStudent = async ({ queryKey }) => {
   const [, studentId] = queryKey;
   const response = await API.get(`/payments/student/${studentId}`);
+  return response.data;
+};
+
+const getPaymentByMonth = async (payload) => {
+  if (!payload.branchId || !payload.year || !payload.month) {
+    throw new Error("Branch ID, yil va oy majburiy");
+  }
+
+  const response = await API.get(`/payments/by-month?branchId=${payload.branchId}&year=${payload.year}&month=${payload.month}`);
   return response.data;
 };
 
@@ -80,11 +88,19 @@ const usePayment = (branchId) => {
     enabled: !!studentId,
   });
 
+  // Query key example
+const paymentsByMonthQuery = ({ branchId, year, month }) => useQuery({
+  queryKey: ['payments-by-month', { branchId, year, month }],
+  queryFn: () => getPaymentByMonth({ branchId, year, month }),
+  enabled: !!branchId && !!year && !!month,
+});
+
   return {
     paymentsQuery,
     paymentByIdQuery,
     createPaymentMutation,
     paymentsByStudentQuery,
+    paymentsByMonthQuery
   };
 };
 

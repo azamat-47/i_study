@@ -1,4 +1,3 @@
-// hooks/useTeachers.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import API from '../services/api';
 import { toast } from 'react-hot-toast';
