@@ -48,6 +48,7 @@ const App = () => {
     { key: '/sayt_haqida', icon: <RiInfoCardLine size={20} />, link: "/sayt_haqida", title: "Sayt haqida" },
   ];
 
+  const userName = localStorage.getItem('username');
   return (
     <Layout className='min-h-[100vh]'>
       {/* Desktop Sider */}
@@ -107,7 +108,7 @@ const App = () => {
               </Tooltip>
             </Popconfirm>
 
-            <Tooltip title="Profil" placement="bottom">
+            <Tooltip title={userName} placement="bottom">
               <Avatar shape='square' size="large" icon={<FaUserNurse />} className='mr-3! cursor-pointer' />
             </Tooltip>
           </div>

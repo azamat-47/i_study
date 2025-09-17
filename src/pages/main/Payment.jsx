@@ -1,29 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Button, DatePicker, Space, Statistic, Row, Col, Table, Typography } from 'antd';
-import { PlusOutlined, CalendarOutlined, DollarOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
+import { Card, Tabs, Button, DatePicker, Space, Statistic, Row, Col, Table, Typography, Popconfirm } from 'antd';
+import { PlusOutlined, DollarOutlined, ArrowUpOutlined, ArrowDownOutlined, DeleteFilled } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import useReports from '../../hooks/useReports';
 import usePayment from '../../hooks/usePayment';
 import useExpenses from '../../hooks/useExpenses';
-import useStudents from '../../hooks/useStudents'; // useStudents hookini import qilamiz
-import AddPaymentModal from '../../components/modals/payment/AddPaymentModal';
 import AddExpenseModal from '../../components/modals/payment/AddExpenseModal';
 import TagUi from '../../components/ui/Tag';
+import toast from 'react-hot-toast';
 
 const { TabPane } = Tabs;
-const { RangePicker } = DatePicker;
 const { Title } = Typography;
 
 const Payment = () => {
   const [activeTab, setActiveTab] = useState('1');
   const [branchId, setBranchId] = useState(null);
-  const [isAddPaymentModalVisible, setIsAddPaymentModalVisible] = useState(false);
   const [isAddExpenseModalVisible, setIsAddExpenseModalVisible] = useState(false);
 
   // Sana filtrlash uchun state'lar
-  const [filterType, setFilterType] = useState('month'); // 'day', 'month', 'range'
-  const [selectedDate, setSelectedDate] = useState(dayjs()); // dayjs object for 'day' and 'month'
-  const [selectedRange, setSelectedRange] = useState([dayjs().startOf('month'), dayjs().endOf('month')]); // [startDate, endDate] for 'range'
+  const [filterType, setFilterType] = useState('month');
+  const [selectedDate, setSelectedDate] = useState(dayjs());
+  const [selectedRange, setSelectedRange] = useState([dayjs().startOf('month'), dayjs().endOf('month')]);
 
   useEffect(() => {
     const storedBranchId = localStorage.getItem("branchId");
@@ -31,74 +28,57 @@ const Payment = () => {
       setBranchId(Number(storedBranchId));
     }
   }, []);
+
   // Reports hook
   const {
     financialSummaryQuery,
     financialSummaryRangeQuery,
-    paymentRangeReportQuery,
-    monthlyPaymentReportQuery,
-    dailyPaymentReportQuery,
-    expenseRangeReportQuery,
-    monthlyExpenseReportQuery,
-    dailyExpenseReportQuery,
+    refreshFinancialSummary,
+    refreshFinancialSummaryRange
   } = useReports(branchId);
 
-  // Payment hook
-  const { paymentsQuery, paymentsByMonthQuery } = usePayment(branchId);
-
-  // Expenses hook
-  const { expensesQuery } = useExpenses(branchId);
-
-  // Students hook (To'lanmagan talabalar uchun)
-  const { unpaidStudentsQuery } = useStudents(branchId);
-
-
-  // Dinamik ravishda query parametrlarni aniqlash
   const currentYear = selectedDate.year();
-  const currentMonth = selectedDate.month() + 1; // month is 0-indexed
-  const currentDay = selectedDate.format('YYYY-MM-DD');
-
+  const currentMonth = selectedDate.month() + 1;
   const rangeStartDate = selectedRange[0]?.format('YYYY-MM-DD');
   const rangeEndDate = selectedRange[1]?.format('YYYY-MM-DD');
 
-  // Hisobotlarni yuklash
+  // Payment hook
+  const {
+    paymentsQuery,
+    paymentsByMonthQuery,
+    createPaymentMutation,
+    deletePaymentMutation,
+    getUnpaidStudentsQuery,
+  } = usePayment({ branchId, year: currentYear, month: currentMonth });
+
+  const unpaidStudents = getUnpaidStudentsQuery;
+
+  // Expenses hook
+  const { expensesQuery, deleteExpenseMutation } = useExpenses(branchId);
+
   const financialSummaryMonth = financialSummaryQuery({ year: currentYear, month: currentMonth });
   const financialSummaryRange = financialSummaryRangeQuery({ startDate: rangeStartDate, endDate: rangeEndDate });
 
-  const paymentMonth = paymentsByMonthQuery({ branchId, year: currentYear, month: currentMonth }).data
+  const paymentMonth = paymentsByMonthQuery({ branchId, year: currentYear, month: currentMonth }).data;
 
+  const allPayments = paymentsQuery.data;
+  const allExpenses = expensesQuery.data;
 
-  const expenseReportRange = expenseRangeReportQuery({ startDate: rangeStartDate, endDate: rangeEndDate });
-  const monthlyExpenseReport = monthlyExpenseReportQuery({ year: currentYear, month: currentMonth });
-  const dailyExpenseReport = dailyExpenseReportQuery({ date: currentDay });
-
-  const allPayments = paymentsQuery.data; // Umumiy to'lovlar uchun
-  const allExpenses = expensesQuery.data; // Umumiy xarajatlar uchun
-
-  // To'lanmagan talabalar
-  const unpaidStudents = unpaidStudentsQuery(currentYear, currentMonth);
-
-
-  // Qaysi hisobotni ko'rsatishni aniqlash
   const currentFinancialSummary = filterType === 'range' ? financialSummaryRange : financialSummaryMonth;
 
-  // To'lovlar uchun jadval ustunlari
+  const handleAddPayment = (data) => {
+    createPaymentMutation.mutate(data);
+  };
+
+  // To'lovlar jadvali
   const paymentColumns = [
-    {
-      title: 'Talaba',
-      dataIndex: 'studentName',
-      key: 'studentName',
-    },
-    {
-      title: 'Kurs',
-      dataIndex: 'courseName',
-      key: 'courseName',
-    },
+    { title: 'Talaba', dataIndex: 'studentName', key: 'studentName' },
+    { title: 'Kurs', dataIndex: 'courseName', key: 'courseName' },
     {
       title: 'Miqdor',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount) => <TagUi>{amount} so'm</TagUi>,
+      render: (amount) => <TagUi>{amount.toLocaleString()} so'm</TagUi>,
     },
     {
       title: 'Sana',
@@ -109,22 +89,38 @@ const Payment = () => {
     {
       title: 'Izoh',
       dataIndex: 'description',
-      render: (coment) => coment.substring(0, 30)
+      render: (coment) => coment ? coment.substring(0, 30) : "",
+    },
+    {
+      title: 'Amallar',
+      key: 'actions',
+      render: (_, record) => (
+        <Popconfirm
+          title="Rostdan ham o'chirib tashlaysizmi?"
+          onConfirm={() => deletePaymentMutation.mutate(record.id)}
+          okText="Ha"
+          cancelText="Yo'q"
+        >
+          <Button
+            danger
+            type="primary"
+            icon={<DeleteFilled />}
+            size="small"
+            loading={deletePaymentMutation.isLoading}
+          />
+        </Popconfirm>
+      ),
     },
   ];
 
-  // Xarajatlar uchun jadval ustunlari
+  // Xarajatlar jadvali
   const expenseColumns = [
-    {
-      title: 'Kategoriya',
-      dataIndex: 'category',
-      key: 'category',
-    },
+    { title: 'Kategoriya', dataIndex: 'category', key: 'category' },
     {
       title: 'Miqdor',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount) => `${amount} UZS`,
+      render: (amount) => <TagUi color="red">{amount.toLocaleString()} so'm</TagUi>,
     },
     {
       title: 'Sana',
@@ -132,55 +128,89 @@ const Payment = () => {
       key: 'date',
       render: (date) => dayjs(date).format('YYYY-MM-DD HH:mm'),
     },
+    { title: 'Izoh', dataIndex: 'description', key: 'description' },
     {
-      title: 'Izoh',
-      dataIndex: 'description',
-      key: 'description',
+      title: 'Amallar',
+      key: 'actions',
+      render: (_, record) => (
+        <Popconfirm
+          title="Rostdan ham o'chirib tashlaysizmi?"
+          onConfirm={() => {
+            deleteExpenseMutation.mutate(record.id); // Xarajat o'chirish funksiyasi
+          }}
+          okText="Ha"
+          cancelText="Yo'q"
+        >
+          <Button
+            danger
+            type="primary"
+            icon={<DeleteFilled />}
+            size="small"
+          // loading={deleteExpenseMutation.isLoading} // Xarajat o'chirish loading
+          />
+        </Popconfirm>
+      ),
     },
   ];
 
-  // To'lanmagan talabalar uchun jadval ustunlari
+  // To'lanmagan talabalar jadvali
   const unpaidStudentsColumns = [
     {
       title: 'Talaba',
       key: 'fullName',
       render: (_, record) => `${record.firstName} ${record.lastName}`,
     },
+    { title: 'Guruh', dataIndex: 'groupName', key: 'groupName' },
     {
-      title: 'Sana',
-      dataIndex: 'createdAt',
-      render: (date) => dayjs(date).format('YYYY-MM-DD HH:mm'),
+      title: 'Miqdor',
+      dataIndex: 'remainingAmount',
+      key: 'remainingAmount',
+      render: (amount) =>
+        amount ? <TagUi>{amount.toLocaleString()} so'm</TagUi> : "Noma'lum",
     },
     {
-      title: 'Kurs',
-      dataIndex: 'courseName',
-      key: 'courseName',
-    },
-    {
-      title: 'To\'lanishi kerak bo\'lgan miqdor',
-      dataIndex: 'unpaidAmount', // Bu maydon backend'dan kelishi kerak
-      key: 'unpaidAmount',
-      render: (amount) => amount ? `${amount} UZS` : 'Noma\'lum',
-    },
+      title: "Amallar",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Popconfirm
+            title={
+              <div>
+                <div>{record.firstName} {record.lastName}</div>
+                <div>{currentMonth}-oy <strong>{record.groupName}</strong> guruhi</div>
+              </div>
+            }
+            onConfirm={() => {
+              handleAddPayment({
+                studentId: record.id,
+                amount: record.remainingAmount,
+                branchId,
+                groupId: record.groupId,
+                description: `${currentMonth} - oy uchun to'lov`,
+                paymentYear: currentYear,
+                paymentMonth: currentMonth,
+              });
+            }}
+            okText="To'lov amalga oshirish"
+            cancelText="Yo'q"
+          >
+            <Button variant='filled' color='primary'>To'lov Qo'shish</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    }
   ];
-
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    setFilterType('day'); // Agar bitta sana tanlansa, kunlik filtrga o'tish
+    setFilterType('day');
   };
 
-  
   return (
-    <div >
+    <div>
       <Title level={2}>Moliyaviy Boshqaruv</Title>
 
-      <Card >
-
-
-
-
-
+      <Card>
         <Row gutter={16}>
           <Col span={4} className='justify-center! flex flex-col'>
             <h6>Oyni Kiriting</h6>
@@ -195,7 +225,7 @@ const Payment = () => {
             <Card bordered={false}>
               <Statistic
                 title="Jami To'lovlar"
-                value={currentFinancialSummary.data?.totalPayments || 0}
+                value={currentFinancialSummary.data?.totalIncome || 0}
                 precision={0}
                 valueStyle={{ color: '#3f8600' }}
                 prefix={<ArrowUpOutlined />}
@@ -230,64 +260,56 @@ const Payment = () => {
               />
             </Card>
           </Col>
+          <Button onClick={() => {
+            if (filterType === 'range') {
+              refreshFinancialSummaryRange();
+              toast.success("Muvaffaqiyatli yangilandi!");
+            } else {
+              refreshFinancialSummary();
+              toast.success("Muvaffaqiyatli yangilandi!");
+            }
+          }}
+          variant="solid" color='cyan'>
+            Yangilash
+          </Button>
+
         </Row>
       </Card>
 
       <Tabs activeKey={activeTab} className='mt-2' onChange={setActiveTab} type="card">
         <TabPane tab="Umumiy To'lovlar" key="1">
-          <div className="flex justify-between">
-            <h3 className='text-xl font-extrabold'>Barcha To'lovlar</h3>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsAddPaymentModalVisible(true)}
-              style={{ marginBottom: 16 }}
-            >
-              To'lov qo'shish
-            </Button>
-          </div>
+          <h3 className='text-xl font-extrabold'>Barcha To'lovlar</h3>
           <Table
             columns={paymentColumns}
             dataSource={allPayments || []}
             loading={paymentsQuery.isLoading}
-            rowKey="_id"
+            rowKey="id"
             scroll={{ x: 'max-content' }}
           />
         </TabPane>
 
         <TabPane tab="Oylik To'lovlar" key="2">
-          <div className="flex justify-between">
-            <h3 className='text-xl font-extrabold'><span className='text-amber-600'>{currentYear} - {currentMonth}</span> uchun To'lovlar</h3>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsAddPaymentModalVisible(true)}
-              style={{ marginBottom: 16 }}
-            >
-              To'lov qo'shish
-            </Button>
-          </div>
+          <h3 className='text-xl font-extrabold'>
+            <span className='text-amber-600'>{currentYear} - {currentMonth}</span> uchun To'lovlar
+          </h3>
           <Table
             columns={paymentColumns}
             dataSource={paymentMonth || []}
-            rowKey="_id"
+            rowKey="id"
             scroll={{ x: 'max-content' }}
           />
         </TabPane>
 
         <TabPane tab="To'lanmagan Talabalar" key="3">
 
-          
-            {console.log(unpaidStudents.data) }
-            <h3 className='text-xl font-extrabold'><span className='text-amber-600'>{currentYear} - {currentMonth}</span> uchun To'lanmagan Talabalar</h3>
-
-          
-
+          <h3 className='text-xl font-extrabold'>
+            <span className='text-amber-600'>{currentYear} - {currentMonth}</span> uchun To'lanmagan Talabalar
+          </h3>
           <Table
             columns={unpaidStudentsColumns}
             dataSource={unpaidStudents.data}
             loading={unpaidStudents.isLoading}
-            rowKey="_id"
+            rowKey="id"
             scroll={{ x: 'max-content' }}
           />
         </TabPane>
@@ -305,35 +327,11 @@ const Payment = () => {
             columns={expenseColumns}
             dataSource={allExpenses || []}
             loading={expensesQuery.isLoading}
-            rowKey="_id"
-            scroll={{ x: 'max-content' }}
-          />
-        </TabPane>
-
-        <TabPane tab="Oylik Xarajatlar" key="5">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsAddExpenseModalVisible(true)}
-            style={{ marginBottom: 16 }}
-          >
-            Xarajat qo'shish
-          </Button>
-          <Table
-            columns={expenseColumns}
-            dataSource={(filterType === 'day' ? dailyExpenseReport.data : monthlyExpenseReport.data) || []}
-            loading={dailyExpenseReport.isLoading || monthlyExpenseReport.isLoading}
-            rowKey="_id"
+            rowKey="id"
             scroll={{ x: 'max-content' }}
           />
         </TabPane>
       </Tabs>
-
-      <AddPaymentModal
-        isVisible={isAddPaymentModalVisible}
-        onClose={() => setIsAddPaymentModalVisible(false)}
-        branchId={branchId}
-      />
 
       <AddExpenseModal
         isVisible={isAddExpenseModalVisible}

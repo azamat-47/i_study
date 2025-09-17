@@ -1,4 +1,3 @@
-// src/pages/Groups/GroupDetail.jsx
 import React from "react";
 import { Button, Card, Descriptions } from "antd";
 import { useParams } from "react-router-dom";

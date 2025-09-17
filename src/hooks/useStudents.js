@@ -56,12 +56,6 @@ const getStudentGroups = async ({ queryKey }) => {
   return response.data;
 };
 
-// Get Unpaid Students
-const getUnpaidStudents = async ({ queryKey }) => {
-  const [, branchId, year, month] = queryKey;
-  const response = await API.get(`/students/unpaid?branchId=${branchId}${year ? `&year=${year}` : ''}${month ? `&month=${month}` : ''}`);
-  return response.data;
-};
 
 // Get Student Statistics
 const getStudentStatistics = async ({ queryKey }) => {
@@ -118,7 +112,6 @@ const useStudents = (branchId) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['students', branchId] });
-      queryClient.invalidateQueries({ queryKey: ['unpaid-students', branchId] }); // To'lanmagan talabalar ro'yxatini ham yangilash
       queryClient.invalidateQueries({ queryKey: ['students-statistics', branchId] }); // Statistikalarni yangilash
       queryClient.invalidateQueries({ queryKey: ['recent-students', branchId] }); // Yaqinda qo'shilganlarni yangilash
       toast.success("Talaba muvaffaqiyatli qo'shildi!", { id: "createStudent" });
@@ -137,7 +130,6 @@ const useStudents = (branchId) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['students', branchId] });
       queryClient.invalidateQueries({ queryKey: ['student', data.id] });
-      queryClient.invalidateQueries({ queryKey: ['unpaid-students', branchId] });
       queryClient.invalidateQueries({ queryKey: ['students-statistics', branchId] });
       queryClient.invalidateQueries({ queryKey: ['recent-students', branchId] });
       toast.success("Talaba muvaffaqiyatli yangilandi!", { id: "updateStudent" });
@@ -179,12 +171,6 @@ const useStudents = (branchId) => {
     enabled: !!studentId,
   });
 
-  // Get Unpaid Students
-  const unpaidStudentsQuery = (year, month) => useQuery({
-    queryKey: ['unpaid-students', branchId, year, month],
-    queryFn: getUnpaidStudents,
-    enabled: !!branchId,
-  });
 
   // Get Student Statistics
   const studentStatisticsQuery = useQuery({
@@ -222,7 +208,6 @@ const useStudents = (branchId) => {
     deleteStudentMutation,
     studentPaymentHistoryQuery,
     studentGroupsQuery,
-    unpaidStudentsQuery,
     studentStatisticsQuery,
     searchStudentsQuery,
     recentStudentsQuery,

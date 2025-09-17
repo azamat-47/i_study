@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, Form, Input, InputNumber, Select, DatePicker, Button } from 'antd';
 import dayjs from 'dayjs';
 import useExpenses from '../../../hooks/useExpenses';
+import InputNumberUi from '../../ui/InputNumber';
 
 const { Option } = Select;
 
@@ -56,11 +57,11 @@ const AddExpenseModal = ({ isVisible, onClose, branchId }) => {
           rules={[{ required: true, message: "Kategoriyani tanlang!" }]}
         >
           <Select placeholder="Kategoriyani tanlang">
-            <Option value="Ijara">Ijara</Option>
-            <Option value="Maosh">Maosh</Option>
-            <Option value="Kommunal">Kommunal to'lovlar</Option>
-            <Option value="Ofis jihozlari">Ofis jihozlari</Option>
-            <Option value="Boshqa">Boshqa</Option>
+            <Option value="RENT">Ijara</Option>
+            <Option value="UTILITIES">Kommunal to'lovlar</Option>
+            <Option value="MAINTENANCE">Remont</Option>
+            <Option value="SUPPLIES">Offis jihozlar</Option>
+            <Option value="OTHER">Boshqa</Option>
           </Select>
         </Form.Item>
 
@@ -69,7 +70,7 @@ const AddExpenseModal = ({ isVisible, onClose, branchId }) => {
           label="Miqdor (UZS)"
           rules={[{ required: true, message: "Miqdorni kiriting!" }]}
         >
-          <InputNumber min={0} style={{ width: '100%' }} />
+          <InputNumberUi placeholder="Miqdor" />
         </Form.Item>
 
         <Form.Item
