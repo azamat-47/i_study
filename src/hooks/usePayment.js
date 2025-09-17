@@ -11,16 +11,9 @@ const getPaymentsByBranch = async ({ queryKey }) => {
   return response.data;
 };
 
-// Get payment by ID
-const getPaymentById = async ({ queryKey }) => {
-  const [, paymentId] = queryKey;
-  const response = await API.get(`/payments/${paymentId}`);
-  return response.data;
-};
-
 // Create Payment
 const createPayment = async (payload) => {
-  if (!payload.studentId || !payload.courseId || !payload.amount || !payload.branchId) {
+  if (!payload.studentId || !payload.groupId || !payload.amount || !payload.branchId) {
     throw new Error("Talaba, kurs, miqdor va filial majburiy.");
   }
   const response = await API.post('/payments', payload);
@@ -38,13 +31,28 @@ const getPaymentByMonth = async (payload) => {
   if (!payload.branchId || !payload.year || !payload.month) {
     throw new Error("Branch ID, yil va oy majburiy");
   }
+  const response = await API.get(
+    `/payments/by-month?branchId=${payload.branchId}&year=${payload.year}&month=${payload.month}`
+  );
+  return response.data;
+};
 
-  const response = await API.get(`/payments/by-month?branchId=${payload.branchId}&year=${payload.year}&month=${payload.month}`);
+// Get Unpaid Students
+const getUnpaidStudents = async ({ queryKey }) => {
+  const [, branchId, year, month] = queryKey;
+  const response = await API.get(
+    `/payments/unpaid?branchId=${branchId}${year ? `&year=${year}` : ''}${month ? `&month=${month}` : ''}`
+  );
+  return response.data;
+};
+
+const deletePayment = async (paymentId) => {
+  const response = await API.delete(`/payments/${paymentId}`);
   return response.data;
 };
 
 // usePayments hook
-const usePayment = (branchId) => {
+const usePayment = ({ branchId, year, month }) => {
   const queryClient = useQueryClient();
 
   // Get all payments for a branch
@@ -52,13 +60,6 @@ const usePayment = (branchId) => {
     queryKey: ['payments', branchId],
     queryFn: getPaymentsByBranch,
     enabled: !!branchId,
-  });
-
-  // Get a single payment by ID
-  const paymentByIdQuery = (paymentId) => useQuery({
-    queryKey: ['payment', paymentId],
-    queryFn: getPaymentById,
-    enabled: !!paymentId,
   });
 
   // Create Payment
@@ -69,37 +70,70 @@ const usePayment = (branchId) => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['payments', branchId] });
-      queryClient.invalidateQueries({ queryKey: ['student-payment-history', data.studentId] }); // Talabaning to'lov tarixini yangilash
-      queryClient.invalidateQueries({ queryKey: ['students', branchId] }); // Talabalar ro'yxatini yangilash (to'lov holati o'zgargani uchun)
-      queryClient.invalidateQueries({ queryKey: ['unpaid-students', branchId] }); // To'lanmagan talabalarni yangilash
-      queryClient.invalidateQueries({ queryKey: ['financial-summary', branchId] }); // Moliyaviy xulosani yangilash
-      queryClient.invalidateQueries({ queryKey: ['payment-reports', branchId] }); // To'lov hisobotlarini yangilash
+      queryClient.invalidateQueries({ queryKey: ['student-payment-history', data.studentId] });
+      queryClient.invalidateQueries({ queryKey: ['students', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['unpaid-students', branchId, year, month] });
+      queryClient.invalidateQueries({ queryKey: ['financial-summary', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['payment-reports', branchId] });
       toast.success("To'lov muvaffaqiyatli qabul qilindi!", { id: "createPayment" });
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || err.message || "To'lov qabul qilishda xatolik yuz berdi.", { id: "createPayment" });
+      toast.error(
+        err.response?.data?.message || err.message || "To'lov qabul qilishda xatolik yuz berdi.",
+        { id: "createPayment" }
+      );
     }
   });
 
-  // Get Payments by Student
-  const paymentsByStudentQuery = (studentId) => useQuery({
-    queryKey: ['payments-by-student', studentId],
-    queryFn: getPaymentsByStudent,
-    enabled: !!studentId,
+  const deletePaymentMutation = useMutation({
+    mutationFn: deletePayment,
+    onMutate: () => {
+      toast.loading("To'lov o'chirilmoqda...", { id: "deletePayment" });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['payments', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['student-payment-history', data.studentId] });
+      queryClient.invalidateQueries({ queryKey: ['students', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['unpaid-students', branchId, year, month] });
+      queryClient.invalidateQueries({ queryKey: ['financial-summary', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['payment-reports', branchId] });
+      toast.success("To'lov muvaffaqiyatli o'chirildi!", { id: "deletePayment" });
+    },
+    onError: (err) => {
+      toast.error(
+        err.response?.data?.message || err.message || "To'lov o'chirishda xatolik yuz berdi.",
+        { id: "deletePayment" }
+      );
+    }
   });
 
-  // Query key example
-const paymentsByMonthQuery = ({ branchId, year, month }) => useQuery({
-  queryKey: ['payments-by-month', { branchId, year, month }],
-  queryFn: () => getPaymentByMonth({ branchId, year, month }),
-  enabled: !!branchId && !!year && !!month,
-});
+  const getUnpaidStudentsQuery = useQuery({
+    queryKey: ['unpaid-students', branchId, year, month],
+    queryFn: getUnpaidStudents,
+    enabled: !!branchId,
+  });
+
+  // Get Payments by Student
+  const paymentsByStudentQuery = (studentId) =>
+    useQuery({
+      queryKey: ['payments-by-student', studentId],
+      queryFn: getPaymentsByStudent,
+      enabled: !!studentId,
+    });
+
+  const paymentsByMonthQuery = ({ branchId, year, month }) =>
+    useQuery({
+      queryKey: ['payments-by-month', { branchId, year, month }],
+      queryFn: () => getPaymentByMonth({ branchId, year, month }),
+      enabled: !!branchId && !!year && !!month,
+    });
 
   return {
     paymentsQuery,
-    paymentByIdQuery,
     createPaymentMutation,
+    deletePaymentMutation,
     paymentsByStudentQuery,
+    getUnpaidStudentsQuery,
     paymentsByMonthQuery
   };
 };

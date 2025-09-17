@@ -42,9 +42,6 @@ const Students = () => {
       title: "Amallar",
       render: (_, record) => (
         <Space>
-          <Button variant="filled" color="blue" onClick={() => navigate(`/students/${record.id}`)}>
-            Ko'rish
-          </Button>
           <Button variant="filled" color="cyan" onClick={() => setEditStudent(record)}>
             Tahrirlash
           </Button>
