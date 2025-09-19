@@ -8,6 +8,7 @@ import useExpenses from '../../hooks/useExpenses';
 import AddExpenseModal from '../../components/modals/payment/AddExpenseModal';
 import TagUi from '../../components/ui/Tag';
 import toast from 'react-hot-toast';
+import AddPaymentPopover from '../../components/modals/payment/AddPaymentPopover';
 
 const { TabPane } = Tabs;
 const { Title } = Typography;
@@ -196,6 +197,13 @@ const Payment = () => {
           >
             <Button variant='filled' color='primary'>To'lov Qo'shish</Button>
           </Popconfirm>
+          <AddPaymentPopover
+            record={record}
+            branchId={branchId}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+            createPaymentMutation={createPaymentMutation}
+          />
         </Space>
       ),
     }
@@ -269,7 +277,7 @@ const Payment = () => {
               toast.success("Muvaffaqiyatli yangilandi!");
             }
           }}
-          variant="solid" color='cyan'>
+            variant="solid" color='cyan'>
             Yangilash
           </Button>
 
