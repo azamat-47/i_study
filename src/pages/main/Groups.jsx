@@ -37,7 +37,7 @@ const Groups = () => {
 
   const columns = [
     { title: "Nomi", dataIndex: "name" },
-    { title: "Kurs", dataIndex: "teacherName" },
+    { title: "Kurs", dataIndex: "courseName" },
     { title: "O'qituvchi", dataIndex: "teacherName" },
     { title: "Boshlanish", dataIndex: "startTime" },
     { title: "Tugash", dataIndex: "endTime" },
