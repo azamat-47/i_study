@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Form, Input, InputNumber, Button } from "antd";
-import useCourse from "../../../hooks/useCourse";
+import {useCourse} from "../../../hooks/useCourse";
 import InputNumberUi from "../../ui/InputNumber";
 
 const CourseCreateModal = ({ open, onCancel, branchId }) => {

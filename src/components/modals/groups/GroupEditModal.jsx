@@ -1,7 +1,6 @@
 import { Modal, Form, Input, TimePicker, Select, Row, Col } from "antd";
-import { useGroups } from "../../../hooks/useGroups";
 import dayjs from "dayjs";
-import useCourse from "../../../hooks/useCourse";
+import {useCourse} from "../../../hooks/useCourse";
 import useTeacher from "../../../hooks/useTeacher";
 // agar talabalar kerak bo'lsa, shu hookni yozib ishlatish mumkin
 // import useStudents from "../../../hooks/useStudents";

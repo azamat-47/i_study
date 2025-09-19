@@ -1,8 +1,7 @@
 import React from "react";
 import { Modal, Form, Input, TimePicker, Select, Row, Col } from "antd";
-import { useGroups } from "../../../hooks/useGroups";
 import dayjs from "dayjs";
-import useCourse from "../../../hooks/useCourse";
+import {useCourse} from "../../../hooks/useCourse";
 import useTeacher from "../../../hooks/useTeacher";
 
 const GroupCreateModal = ({ open, onClose, branchId }) => {

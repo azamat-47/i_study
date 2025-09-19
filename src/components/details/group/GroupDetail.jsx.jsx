@@ -1,14 +1,14 @@
 import React from "react";
 import { Button, Card, Descriptions } from "antd";
 import { useParams } from "react-router-dom";
-import {useGroups}  from "../../../hooks/useGroups";
+import { useCourse } from "../../../hooks/useCourse";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineSwapLeft } from "react-icons/ai";
 
 const GroupDetail = () => {
   const { id } = useParams();
   const branchId = localStorage.getItem("branchId");
-  const { groupByIdQuery } = useGroups(branchId);
+  const { groupByIdQuery } = useCourse(branchId);
   const { data, isLoading } = groupByIdQuery(id);
   const navigate = useNavigate();
 

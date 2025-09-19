@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import useCourse from "../../hooks/useCourse";
+import {useCourse} from "../../hooks/useCourse";
 import CourseCreateModal from "../../components/modals/courses/CourseCreate";
 import CourseEditModal from "../../components/modals/courses/CourseEdit";
 import TagUi from "../../components/ui/Tag";

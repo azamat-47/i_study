@@ -2,8 +2,8 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Table, Button, Space, Typography, Popconfirm } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import useCourse from "../../../hooks/useCourse";
+import dayjs from "dayjs";
+import {useCourse} from "../../../hooks/useCourse";
 
 const { Title } = Typography;
 
@@ -41,6 +41,9 @@ const CoursesDetail = () => {
       
       <div style={{ marginBottom: "20px" }}>
         <p><strong>Kurs nomi:</strong> {data?.name}</p>
+        <p><strong>Davomiylik:</strong> {data?.durationMonths}</p>
+        <p><strong>Tavsifi:</strong> {data?.description || "Tavsif yuq"}</p>
+        <p><strong>Kurs nomi:</strong> {dayjs(data?.createdAt).format("YYYY-MM-DD")}</p>
         <p><strong>Guruhlar soni:</strong> {data?.groups?.length || 0} ta</p>
       </div>
 
@@ -57,7 +60,6 @@ const CoursesDetail = () => {
         }}
         loading={isLoading}
         
-        size="middle"
       />
     </div>
   );
