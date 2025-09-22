@@ -114,8 +114,8 @@ const Payment = () => {
     },
     {
       title: "Sana",
-      dataIndex: "date",
-      key: "date",
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (date) => (date ? dayjs(date).format('YYYY-MM-DD HH:mm') : ''),
     },
     {

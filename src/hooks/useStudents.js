@@ -86,6 +86,7 @@ const getStudentsByPaymentStatus = async ({ queryKey }) => {
 };
 
 
+
 // useStudents hook
 const useStudents = (branchId) => {
   const queryClient = useQueryClient();
@@ -156,6 +157,8 @@ const useStudents = (branchId) => {
       toast.error(err.response?.data?.message || err.message || "Talabani o'chirishda xatolik yuz berdi.", { id: "deleteStudent" });
     }
   });
+
+  
 
   // Get Student Payment History
   const studentPaymentHistoryQuery = (studentId) => useQuery({

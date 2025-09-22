@@ -6,9 +6,8 @@ import useTeacher from "../../../hooks/useTeacher";
 
 const GroupCreateModal = ({ open, onClose, branchId }) => {
   const [form] = Form.useForm();
-  const { createGroupMutation } = useGroups(branchId);
 
-  const { coursesQuery } = useCourse(branchId, { enabled: !!branchId });
+  const { coursesQuery, createGroupMutation } = useCourse(branchId, { enabled: !!branchId });
   const { teachersQuery } = useTeacher(branchId, { enabled: !!branchId });
   console.log(teachersQuery.data);
 
