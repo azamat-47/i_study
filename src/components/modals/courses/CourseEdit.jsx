@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, InputNumber, Button } from "antd";
-import useCourse from "../../../hooks/useCourse";
+import {useCourse} from "../../../hooks/useCourse";
 import InputNumberUi from "../../ui/InputNumber";
 
 const CourseEditModal = ({ open, onCancel, course, branchId }) => {

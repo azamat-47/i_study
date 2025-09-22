@@ -36,6 +36,7 @@ const Students = () => {
     { title: "Ism", dataIndex: "firstName" },
     { title: "Familiya", dataIndex: "lastName" },
     { title: "Telefon", dataIndex: "phoneNumber" },
+    { title: "2-Telefon", dataIndex: "parentPhoneNumber" },
     { title: "Guruhlar", dataIndex: "groups", render: (groups) => groups.map(g => g.name).join(", ") },
     { title: "Filial", dataIndex: "branchName" },
     {

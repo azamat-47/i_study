@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Table, Button, Space, Popconfirm, Input, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import useCourse from "../../hooks/useCourse";
+import {useCourse} from "../../hooks/useCourse";
 import CourseCreateModal from "../../components/modals/courses/CourseCreate";
 import CourseEditModal from "../../components/modals/courses/CourseEdit";
 import TagUi from "../../components/ui/Tag";
+import { useNavigate } from "react-router-dom";
+
 
 const { Search } = Input;
 
@@ -14,6 +16,8 @@ const Courses = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+
+  const router = useNavigate()
 
   useEffect(() => {
     const storedBranchId = localStorage.getItem("branchId");
@@ -44,8 +48,10 @@ const Courses = () => {
       title: "Amallar",
       render: (_, record) => (
         <Space>
+          <Button variant="filled" color="geekblue" onClick={() => router(`/kurslar/${record.id}`)}>Ko'rish</Button>
           <Button
             variant="filled"
+            color="cyan"
             onClick={() => {
               setSelectedCourse(record);
               setEditOpen(true);
@@ -57,7 +63,7 @@ const Courses = () => {
             title="Kursni o'chirishni tasdiqlaysizmi?"
             onConfirm={() => deleteCourseMutation.mutate(record.id)}
           >
-            <Button variant="filled" danger>
+            <Button variant="filled" color="danger">
               O'chirish
             </Button>
           </Popconfirm>

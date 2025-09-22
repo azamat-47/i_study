@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, InputNumber, Select, DatePicker, Button } from 'antd';
 import dayjs from 'dayjs';
-import useExpenses from '../../../hooks/useExpenses';
+import useFinance from '../../../hooks/useFinance';
 import InputNumberUi from '../../ui/InputNumber';
 
 const { Option } = Select;
@@ -9,7 +9,7 @@ const { Option } = Select;
 const AddExpenseModal = ({ isVisible, onClose, branchId }) => {
   const [form] = Form.useForm();
 
-  const { createExpenseMutation } = useExpenses(branchId);
+  const { createExpenseMutation } = useFinance(branchId);
 
   const handleSubmit = async () => {
     try {

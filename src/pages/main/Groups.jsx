@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Table, Button, Input, Popconfirm, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { useGroups } from "../../hooks/useGroups";
+import { useCourse } from "../../hooks/useCourse";
 import { useNavigate } from "react-router-dom";
 import GroupCreateModal from "../../components/modals/groups/GroupCreateModal";
 import GroupEditModal from "../../components/modals/groups/GroupEditModal";
@@ -24,7 +24,7 @@ const Groups = () => {
   }, []);
 
   // useGroups faqat branchId bo‘lganda ishga tushadi
-  const { groupsQuery, deleteGroupMutation } = useGroups(branchId, {
+  const { groupsQuery, deleteGroupMutation } = useCourse(branchId, {
     enabled: !!branchId,
   });
 
@@ -37,7 +37,7 @@ const Groups = () => {
 
   const columns = [
     { title: "Nomi", dataIndex: "name" },
-    { title: "Kurs", dataIndex: "teacherName" },
+    { title: "Kurs", dataIndex: "courseName" },
     { title: "O'qituvchi", dataIndex: "teacherName" },
     { title: "Boshlanish", dataIndex: "startTime" },
     { title: "Tugash", dataIndex: "endTime" },

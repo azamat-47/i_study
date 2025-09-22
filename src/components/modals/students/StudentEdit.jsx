@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, Select } from "antd";
 import useStudents from "../../../hooks/useStudents";
-import { useGroups } from "../../../hooks/useGroups";
+import { useCourse } from "../../../hooks/useCourse";
 
 const StudentEditModal = ({ open, onClose, student, branchId }) => {
   const [form] = Form.useForm();
   const { updateStudentMutation } = useStudents(branchId);
-  const { groupsQuery } = useGroups(branchId, { enabled: !!branchId });
+  const { groupsQuery } = useCourse(branchId, { enabled: !!branchId });
 
   useEffect(() => {
     if (student) {
